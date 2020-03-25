@@ -9,7 +9,7 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            HMarkupClassifier.Utils.ShowFreq();
+            HMarkupClassifier.Utils.Test();
         }
     }
 }
