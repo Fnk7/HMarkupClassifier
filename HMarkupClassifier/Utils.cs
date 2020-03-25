@@ -6,27 +6,80 @@ using System.Text;
 
 using ClosedXML.Excel;
 using HMarkupClassifier.SheetParser;
+using HMarkupClassifier.RangeParser;
 
 namespace HMarkupClassifier
 {
-    public class Utils
+    public static class Utils
     {
+        public static void ParseAnnotated(string dataset, string target)
+        {
+            dataset = Path.GetFullPath(dataset);
+            target = Path.GetFullPath(target);
+            if (!Directory.Exists(target))
+                Directory.CreateDirectory(target);
+            else if (Directory.GetFiles(target).Length != 0)
+                return;
+            var rangeFiles = Directory.GetFiles(dataset, "*.range");
+            foreach (var rangeFile in rangeFiles)
+            {
+                string workbookFile = rangeFile.Substring(0, rangeFile.LastIndexOf(".range")) + ".xlsx";
+                if (File.Exists(workbookFile))
+                {
+                    Dictionary<string, SheetMark> sheetMarks = SheetMark.ParseRange(rangeFile);
+                    using (XLWorkbook book = new XLWorkbook(workbookFile))
+                    {
+                        foreach (var sheetMark in sheetMarks)
+                        {
+                            try
+                            {
+                                var sheet = book.Worksheet(sheetMark.Key);
+                                SheetFeature sheetFeature = SheetFeature.ParseSheet(sheet);
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Write($"In {workbookFile} :");
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private static void WriteIntoCSV(SheetFeature sheetFeature, SheetMark sheetMark = null, string target, string sheetName)
+        {
+            sheetName = GetValidFileName(sheetName);
+            if(sheetName == "" || File.Exists(Path.Combine(target, sheetName)))
+            {
+                int temp = 1;
+                string tempName;
+                do
+                {
+                    tempName = sheetName + $"({temp})";
+                    temp++;
+                } while (File.Exists(Path.Combine(target, tempName)));
+                sheetName = tempName;
+                
+            }
+
+        }
+
+        private static string GetValidFileName(string fileName)
+        {
+            StringBuilder builder = new StringBuilder(fileName);
+            foreach (var ch in Path.GetInvalidFileNameChars())
+                builder.Replace(ch.ToString(), string.Empty);
+            return builder.ToString();
+        }
+
         public static void Test()
         {
             Console.WriteLine("Test start...");
-            XLWorkbook book = new XLWorkbook("D:\\02rise.xlsx");
-            foreach (var sheet in book.Worksheets)
-            {
-                try
-                {
-                    SheetFeature feature = SheetFeature.ParseSheet(sheet);
-                    Console.WriteLine(feature.ToString());
-                }catch(Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                }
-            }
+            XLWorkbook workbook = new XLWorkbook("D:\\test.xlsx");
+
             Console.WriteLine("Test end...");
         }
 
