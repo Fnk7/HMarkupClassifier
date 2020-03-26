@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using ClosedXML.Excel;
 using HMarkupClassifier.SheetParser;
@@ -12,74 +11,63 @@ namespace HMarkupClassifier
 {
     public static class Utils
     {
-        public static void ParseAnnotated(string dataset, string target)
+        public static void ParseDataset(string dataset, string target)
         {
-            dataset = Path.GetFullPath(dataset);
-            target = Path.GetFullPath(target);
             if (!Directory.Exists(target))
                 Directory.CreateDirectory(target);
             else if (Directory.GetFiles(target).Length != 0)
                 return;
+            
             var rangeFiles = Directory.GetFiles(dataset, "*.range");
-            foreach (var rangeFile in rangeFiles)
+            int sheetIndex = 1;
+            using (StreamWriter infoWriter = new StreamWriter(Path.Combine(target, "Info.txt")))
             {
-                string workbookFile = rangeFile.Substring(0, rangeFile.LastIndexOf(".range")) + ".xlsx";
-                if (File.Exists(workbookFile))
+                foreach (var rangeFile in rangeFiles)
                 {
-                    Dictionary<string, SheetMark> sheetMarks = SheetMark.ParseRange(rangeFile);
-                    using (XLWorkbook book = new XLWorkbook(workbookFile))
+                    string workbookFile = rangeFile.Substring(0, rangeFile.LastIndexOf(".range")) + ".xlsx";
+                    if (File.Exists(workbookFile))
                     {
-                        foreach (var sheetMark in sheetMarks)
+                        infoWriter.WriteLine(rangeFile);
+                        infoWriter.WriteLine(workbookFile);
+                        Dictionary<string, SheetMark> sheetMarks = SheetMark.ParseRange(rangeFile);
+                        using (XLWorkbook book = new XLWorkbook(workbookFile))
                         {
-                            try
-                            {
-                                var sheet = book.Worksheet(sheetMark.Key);
-                                SheetFeature sheetFeature = SheetFeature.ParseSheet(sheet);
-
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Write($"In {workbookFile} :");
-                                Console.WriteLine(ex.Message);
-                            }
+                            foreach (var sheet in book.Worksheets)
+                                if (sheetMarks.ContainsKey(sheet.Name))
+                                    try
+                                    {
+                                        SheetFeature feature = SheetFeature.ParseSheet(sheet);
+                                        string path = Path.Combine(target, $"Sheet{sheetIndex:D3}.csv");
+                                        feature.WriteIntoCSV(path, sheetMarks[sheet.Name]);
+                                        infoWriter.WriteLine($"{sheet.Name}\tSheet{sheetIndex:D3}.csv");
+                                        sheetIndex++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        infoWriter.Write(sheet.Name);
+                                        infoWriter.Write("\t");
+                                        infoWriter.WriteLine(ex.Message);
+                                    }
                         }
+                        infoWriter.WriteLine();
                     }
                 }
             }
         }
 
 
-        private static void WriteIntoCSV(SheetFeature sheetFeature, SheetMark sheetMark = null, string target, string sheetName)
-        {
-            sheetName = GetValidFileName(sheetName);
-            if(sheetName == "" || File.Exists(Path.Combine(target, sheetName)))
-            {
-                int temp = 1;
-                string tempName;
-                do
-                {
-                    tempName = sheetName + $"({temp})";
-                    temp++;
-                } while (File.Exists(Path.Combine(target, tempName)));
-                sheetName = tempName;
-                
-            }
-
-        }
-
-        private static string GetValidFileName(string fileName)
-        {
-            StringBuilder builder = new StringBuilder(fileName);
-            foreach (var ch in Path.GetInvalidFileNameChars())
-                builder.Replace(ch.ToString(), string.Empty);
-            return builder.ToString();
-        }
 
         public static void Test()
         {
             Console.WriteLine("Test start...");
-            XLWorkbook workbook = new XLWorkbook("D:\\test.xlsx");
-
+            using (XLWorkbook book = new XLWorkbook("D:\\Workspace\\HMarkupDataset\\Annotated\\02rise.xlsx"))
+            {
+                var sheet = book.Worksheet("Companies");
+                foreach (var cell in sheet.RangeUsed(XLCellsUsedOptions.All).Cells())
+                {
+                    Console.WriteLine($"{cell.Address.ToString()}\t{cell.Style.NumberFormat.Format}");
+                }
+            }
             Console.WriteLine("Test end...");
         }
 
@@ -107,18 +95,11 @@ namespace HMarkupClassifier
                                 sheetCnt++;
                                 SheetFeature feature = SheetFeature.ParseSheet(sheet);
                                 Console.WriteLine(feature.ToString());
-                                List<Style> styles = feature.styles;
-                                List<Border> borders = new List<Border>();
-                                List<Fill> fills = new List<Fill>();
-                                List<Font> fonts = new List<Font>();
-                                List<Alignment> alignments = new List<Alignment>();
-                                foreach (var style in styles)
-                                {
-                                    if (!borders.Contains(style.border)) borders.Add(style.border);
-                                    if (!fills.Contains(style.fill)) fills.Add(style.fill);
-                                    if (!fonts.Contains(style.font)) fonts.Add(style.font);
-                                    if (!alignments.Contains(style.alignment)) alignments.Add(style.alignment);
-                                }
+                                List<Style> styles = feature.info.styles;
+                                List<Alignment> alignments = feature.info.alignments;
+                                List<Border> borders = feature.info.borders;
+                                List<Fill> fills = feature.info.fills;
+                                List<Font> fonts = feature.info.fonts;
                                 if (styleCnt.ContainsKey(styles.Count)) styleCnt[styles.Count]++;
                                 else styleCnt.Add(styles.Count, 1);
                                 if (borderCnt.ContainsKey(borders.Count)) borderCnt[borders.Count]++;
@@ -140,8 +121,8 @@ namespace HMarkupClassifier
             }
             Console.WriteLine();
             Console.WriteLine("Total Sheets: {0}", sheetCnt);
-            if (!Directory.Exists("D:\\Statistic"))
-                Directory.CreateDirectory("D:\\Statistic");
+            if (!Directory.Exists("D:\\Statistic2"))
+                Directory.CreateDirectory("D:\\Statistic2");
             PrintCount(styleCnt, "Style", sheetCnt);
             PrintCount(borderCnt, "Border", sheetCnt);
             PrintCount(fillCnt, "Fill", sheetCnt);
@@ -190,7 +171,7 @@ namespace HMarkupClassifier
                     row = row.RowBelow();
                 }
                 Console.WriteLine("Sheet Count: " + sheetCnt);
-                workbook.SaveAs(Path.Combine("D:\\Statistic", name + ".xlsx"));
+                workbook.SaveAs(Path.Combine("D:\\Statistic2", name + ".xlsx"));
             }
         }
     }

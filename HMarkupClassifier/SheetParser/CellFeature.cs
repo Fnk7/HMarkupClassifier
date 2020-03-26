@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 
 namespace HMarkupClassifier.SheetParser
 {
     class CellFeature
     {
-        private static readonly Regex capitalRegex = new Regex(@"^[^a-z]+$", RegexOptions.Compiled);
-        private static readonly Regex nonAlphabetRegex = new Regex(@"^[^a-zA-Z]$");
         /*
          * Address
          * DataType
@@ -22,106 +16,76 @@ namespace HMarkupClassifier.SheetParser
          * Style
          * Value
          */
-        #region flag
-        private int _flag = 0;
-        private static readonly int hasBorder = 1 << 0;
-        private static readonly int isFill = 1 << 1;
-        private static readonly int isEmpty = 1 << 2;
-        private static readonly int allCapital = 1 << 3;
-        private static readonly int beginWithSpecial = 1 << 4;
-        private static readonly int nonAlphabet = 1 << 5;
-        private static readonly int hasFormual = 1 << 6;
-        private static readonly int hasArrayFormula = 1 << 7;
-        private static readonly int hasHyperlink = 1 << 8;
-        private static readonly int hasComment = 1 << 9;
-        #endregion
+        // Cell Style
+        public Style style;
+        public byte merged;
+        public double width, height;
+        public double widthRatio, heightRatio;
 
-        // HasFormula, HasArrayFormula, HasComment, HasHyperlink
-        public bool HasFormula
-        {
-            get { return (_flag & hasFormual) != 0; }
-            set { _flag = value ? (_flag | hasFormual) : (_flag & ~hasFormual); }
-        }
-        public bool HasArrayFormula
-        {
-            get { return (_flag & hasArrayFormula) != 0; }
-            set { _flag = value ? (_flag | hasArrayFormula) : (_flag & ~hasArrayFormula); }
-        }
-        public bool HasHyperlink
-        {
-            get { return (_flag & hasHyperlink) != 0; }
-            set { _flag = value ? (_flag | hasHyperlink) : (_flag & ~hasHyperlink); }
-        }
-        public bool HasComment
-        {
-            get { return (_flag & hasComment) != 0; }
-            set { _flag = value ? (_flag | hasComment) : (_flag & ~hasComment); }
-        }
-        // Value
-
-
-        // Cell
-        private double width, height;
-        private Style style;
-
-        // Value
+        // Value Feature
+        public byte dataType;
+        public byte empty;
         public int valueLen;
-        public int dataType;
-        public bool IsEmpty
-        {
-            get { return (_flag & isEmpty) != 0; }
-            set { _flag = value ? (_flag | isEmpty) : (_flag & ~isEmpty); }
-        }
-        public bool AllCapital
-        {
-            get { return (_flag & allCapital) != 0; }
-            set { _flag = value ? (_flag | allCapital) : (_flag & ~allCapital); }
-        }
-        public bool BeginWithSpecial
-        {
-            get { return (_flag & beginWithSpecial) != 0; }
-            set { _flag = value ? (_flag | beginWithSpecial) : (_flag & ~beginWithSpecial); }
-        }
-        public bool NonAlphabet
-        {
-            get { return (_flag & nonAlphabet) != 0; }
-            set { _flag = value ? (_flag | nonAlphabet) : (_flag & ~nonAlphabet); }
-        }
+        // HasFormula, HasArrayFormula, HasComment, HasHyperlink
+        public byte hasFormula;
+        public byte hasArrayFormula;
+        public byte hasHyperlink;
+        public byte hasComment;
+        // Content
+        // TODO:
 
-        // Spatial
-        private int col, row;
+        // Position Feature
+        public int col, row;
+        public float leftRatio, topRatio, rightRatio, bottomRatio;
+        public Position position = new Position();
 
-        public CellFeature(IXLCell cell, List<Style> styles)
+        public CellFeature(IXLCell cell, SheetInfo info)
         {
-            // Cell
-            style = new Style(cell.Style);
-            int index = styles.IndexOf(style);
-            if (index >= 0) style = styles[index];
-            else styles.Add(style);
-            width = cell.WorksheetColumn().Width;
-            height = cell.WorksheetRow().Height;
-
-            // Value
-            dataType = (int)cell.DataType;
-            if (!cell.IsEmpty())
-            {
-                string value;
-                try { value = cell.GetString(); }
-                catch (Exception ex) { throw new ParseFailException("Can't Get Value of Cell!", ex); }
-                valueLen = value.Length;
-                if (capitalRegex.IsMatch(value)) AllCapital = true;
-                if (nonAlphabetRegex.IsMatch(value)) NonAlphabet = true;
-            }
-            else
-                IsEmpty = true;
-            HasFormula = cell.HasFormula;
-            HasArrayFormula = cell.HasArrayFormula;
-            HasHyperlink = cell.HasHyperlink;
-            HasComment = cell.HasComment;
             // Spatial
             col = cell.Address.ColumnNumber;
             row = cell.Address.RowNumber;
-            // 
+            leftRatio = (col - info.left) / (float)(info.NumCol);
+            topRatio = (row - info.top) / (float)(info.NumRow);
+            rightRatio = (info.right - col) / (float)(info.NumCol);
+            bottomRatio = (info.bottom - row) / (float)(info.NumRow);
+
+            // Cell Style
+            style = info.GetStyle(cell.Style);
+            merged = (byte)(cell.IsMerged() ? 1 : 0);
+            width = cell.WorksheetColumn().Width;
+            height = cell.WorksheetRow().Height;
+            widthRatio = width / info.width;
+            heightRatio = height / info.height;
+
+            // Value
+            dataType = (byte)cell.DataType;
+            string value;
+            try
+            {
+                IXLCell temp = cell;
+                if (cell.IsMerged()) temp = cell.MergedRange().FirstCell();
+                hasFormula = (byte)(temp.HasFormula ? 1 : 0);
+                hasArrayFormula = (byte)(temp.HasArrayFormula ? 1 : 0);
+                hasHyperlink = (byte)(temp.HasHyperlink ? 1 : 0);
+                hasComment = (byte)(temp.HasComment ? 1 : 0);
+                value = temp.GetString();
+            }
+            catch (Exception ex) { throw new ParseFailException("Can't Get Value of Cell!", ex); }
+            empty = (byte)(value.Length == 0 ? 1 : 0);
+            valueLen = value.Length;
         }
+
+        public void SetPosition(int sideIndex, CellFeature cell) => position.SetPosition(sideIndex, this, cell);
+
+        public static string csvTitle = $"col,row," +
+               $"{Style.csvTitle},merged,width,height,widthRatio,heightRatio," +
+               $"dataType,valueLen,empty,hasArrayFormula,hasComment,hasHyperlink,hasFormula," +
+               $"leftRatio,topRatio,rightRatio,bottomRatio,{Position.csvTitle}";
+
+        public string CSVString()
+            => $"{col},{row}," +
+               $"{style.CSVString()},{merged},{width},{height},{widthRatio},{heightRatio}," +
+               $"{dataType},{valueLen},{empty},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +
+               $"{leftRatio},{topRatio},{rightRatio},{bottomRatio},{position.CSVString()}";
     }
 }

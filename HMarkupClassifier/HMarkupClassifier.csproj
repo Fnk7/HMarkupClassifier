@@ -57,6 +57,7 @@
     <Compile Include="RangeParser\SheetMark.cs" />
     <Compile Include="SheetParser\CellFeature.cs" />
     <Compile Include="SheetParser\ParseFailException.cs" />
+    <Compile Include="SheetParser\Position.cs" />
     <Compile Include="SheetParser\SheetFeature.cs" />
     <Compile Include="SheetParser\Style.cs" />
     <Compile Include="Utils.cs" />
