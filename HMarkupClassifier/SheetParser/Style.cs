@@ -7,7 +7,7 @@ namespace HMarkupClassifier.SheetParser
         public int count = 0;
 
         public byte hasPrefix;
-        public int numberFormat;
+        public byte numberFormat;
         public Alignment alignment;
         public Border border;
         public Fill fill;
@@ -18,7 +18,7 @@ namespace HMarkupClassifier.SheetParser
         public Style(IXLStyle style)
         {
             hasPrefix = (byte)(style.IncludeQuotePrefix ? 1 : 0);
-            numberFormat = style.NumberFormat.NumberFormatId;
+            numberFormat = (byte)(style.NumberFormat.NumberFormatId == 0 ? 0 : 1);
             alignment = new Alignment(style.Alignment);
             border = new Border(style.Border);
             fill = new Fill(style.Fill);
@@ -51,7 +51,7 @@ namespace HMarkupClassifier.SheetParser
         }
 
         public static string csvTitle
-            = $"prefix,numberFormat,{Alignment.csvTitle},{Border.csvTitle},{Fill.csvTitle},{Font.csvTitle}";
+            = $"Prefix,Format,{Alignment.csvTitle},{Border.csvTitle},{Fill.csvTitle},{Font.csvTitle}";
 
         public string CSVString()
         {
@@ -76,7 +76,7 @@ namespace HMarkupClassifier.SheetParser
         {
             horizontal = (int)alignment.Horizontal;
             vertical = (int)alignment.Vertical;
-            indent = alignment.Indent;
+            indent = alignment.Indent == 0 ? 0 : 1;
             wrapText = alignment.WrapText ? 1 : 0;
             shrinkToFit = alignment.ShrinkToFit ? 1 : 0;
         }
@@ -105,7 +105,7 @@ namespace HMarkupClassifier.SheetParser
         }
 
         public static string csvTitle
-            = "horizontal,vertical,indent,wrapText,shrinkToFik";
+            = "Horizontal,Vertical-ALI,Indent,WrapText,ShrinkToFik";
 
         public string CSVString()
             => $"{horizontal},{vertical},{indent},{wrapText},{shrinkToFit}";
@@ -186,7 +186,7 @@ namespace HMarkupClassifier.SheetParser
         }
 
         public static string csvTitle
-            = "pattern,foreIndex,backIndex";
+            = "Fill,ForeColor,BackColor";
 
         public string CSVString()
             => $"{pattern},{foreIndex},{backIndex}";
@@ -204,7 +204,7 @@ namespace HMarkupClassifier.SheetParser
         // 0-5 NotApplicable is 0
         byte familyNumbering;
 
-        double size;
+        public double size;
         public int color;
         public string name;
 
@@ -217,7 +217,7 @@ namespace HMarkupClassifier.SheetParser
             strikethrough = (byte)(font.Strikethrough ? 1 : 0);
             underline = (byte)(font.Underline == XLFontUnderlineValues.None ? 0 : 1);
             vertical = (byte)(font.VerticalAlignment == XLFontVerticalTextAlignmentValues.Baseline ? 0 : 1);
-            familyNumbering = (byte)font.FontFamilyNumbering;
+            familyNumbering = (byte)(font.FontFamilyNumbering == XLFontFamilyNumberingValues.NotApplicable ? 0 : 1);
             color = font.FontColor.Color.ToArgb();
             size = font.FontSize;
             name = font.FontName;
@@ -255,7 +255,7 @@ namespace HMarkupClassifier.SheetParser
         }
 
         public static string csvTitle
-            = "Bold,Italic,Strikethrough,Underline,Vertical,FamilyNumbering,FontColor,FontSize,FontName";
+            = "Bold,Italic,Strikethrough,Underline,Vertical-Font,FamilyNumbering,FontColor,FontSize,FontName";
 
         public string CSVString()
             => $"{bold},{italic},{strikethrough},{underline},{vertical},{familyNumbering},{colorIndex},{size},{nameIndex}";

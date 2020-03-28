@@ -6,20 +6,10 @@ namespace HMarkupClassifier.SheetParser
 {
     class CellFeature
     {
-        /*
-         * Address
-         * DataType
-         * FormulaA1
-         * HasFormula, HasArrayFormula
-         * HasComment
-         * HasHyperlink
-         * Style
-         * Value
-         */
         // Cell Style
         public Style style;
         public byte merged;
-        public double width, height;
+        public double width, height, fontWidth, fontHeight;
         public double widthRatio, heightRatio;
 
         // Value Feature
@@ -45,6 +35,7 @@ namespace HMarkupClassifier.SheetParser
         public byte allUpper;
         private static readonly Regex allNumberRegex = new Regex(@"^(?:[^\p{L}]*\d+[^\p{L}]*)+$", RegexOptions.Compiled);
         public byte allNumber;
+        public double textWidth;
 
         // Position Feature
         public int col, row;
@@ -55,7 +46,7 @@ namespace HMarkupClassifier.SheetParser
 
         public CellFeature(IXLCell cell, SheetInfo info)
         {
-            // Spatial
+            // Position
             col = cell.Address.ColumnNumber;
             row = cell.Address.RowNumber;
             leftRatio = (col - info.left) / (float)(info.NumCol);
@@ -69,14 +60,15 @@ namespace HMarkupClassifier.SheetParser
             style = info.GetStyle(cell.Style);
             merged = (byte)(cell.IsMerged() ? 1 : 0);
             width = cell.WorksheetColumn().Width;
+            fontWidth = width / style.font.size;
             height = cell.WorksheetRow().Height;
+            fontHeight = height / style.font.size;
             widthRatio = width / info.width;
             heightRatio = height / info.height;
 
             // Formula
             if (cell.HasFormula)
                 info.formulas.Add(cell.FormulaA1);
-
 
             // Value
             dataType = (byte)cell.DataType;
@@ -102,6 +94,8 @@ namespace HMarkupClassifier.SheetParser
                 punctuation = (byte)(punctuationRegex.IsMatch(value) ? 1 : 0);
                 allUpper = (byte)(hasLowerRegex.IsMatch(value) ? 0 : 1);
                 allNumber = (byte)(allNumberRegex.IsMatch(value) ? 1 : 0);
+                if (value.Length != 0)
+                    textWidth = fontWidth / value.Length;
             }
         }
 
@@ -110,18 +104,18 @@ namespace HMarkupClassifier.SheetParser
         public void SetNonEmptyNeighbors(int sideIndex, CellFeature cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
 
         public static string csvTitle = $"col,row," +
-               $"{Style.csvTitle},merged,width,height,widthRatio,heightRatio," +
-               $"dataType,words,empty," +
-               $"beginNumber,beginSpecial,symbols,punctuation,allNumber,allUpper," +
+               $"{Style.csvTitle},Merged,FontWidth,FontHeight,WidthRatio,HeightRatio," +
+               $"DataType,Words,empty," +
+               $"BeginNumber,BeginSpecial,Symbols,Punctuation,AllNumber,AllUpper,TextWidth" +
                $"IsReferenced,ArrayFormula,Comment,Hyperlink,Formula," +
                $"LeftDistance,TopDistance,RightDistance,BottomDistance," +
-               $"leftRatio,topRatio,{Position.csvTitle},{Position.csvTitle}";
+               $"LeftRatio,TopRatio,{Position.csvTitle},{Position.csvTitle}";
 
         public string CSVString()
             => $"{col},{row}," +
-               $"{style.CSVString()},{merged},{width},{height},{widthRatio},{heightRatio}," +
+               $"{style.CSVString()},{merged},{fontWidth},{fontHeight},{widthRatio},{heightRatio}," +
                $"{dataType},{words},{empty}," +
-               $"{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper}," +
+               $"{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper},{textWidth}" +
                $"{isReferenced},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +
                $"{leftDistance},{topDistance},{rightDistance},{bottomDistance}," +
                $"{leftRatio},{topRatio},{neighbors.CSVString()},{nonEmptyNeighbors.CSVString()}";

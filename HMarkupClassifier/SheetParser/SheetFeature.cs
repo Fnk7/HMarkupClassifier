@@ -76,6 +76,7 @@ namespace HMarkupClassifier.SheetParser
         public void WriteIntoCSV(string path, SheetMark mark = null)
         {
             using (StreamWriter writer = new StreamWriter(path))
+            //using (StreamWriter map = new StreamWriter(path.Substring(0, path.LastIndexOf(".csv")) + ".cellmap"))
             {
                 writer.WriteLine($"type,{CellFeature.csvTitle}");
                 if (mark != null)
@@ -136,10 +137,7 @@ namespace HMarkupClassifier.SheetParser
         public List<Font> fonts = new List<Font>();
 
         public bool ValidAddress(int col, int row)
-        {
-            if (col < left || col > right || row < top || row > bottom) return false;
-            return true;
-        }
+            => !(col < left || col > right || row < top || row > bottom);
 
 
         public SheetInfo(IXLWorksheet sheet)
@@ -164,8 +162,7 @@ namespace HMarkupClassifier.SheetParser
         {
             Style style = new Style(xlStyle);
             int index = styles.IndexOf(style);
-            if (index >= 0)
-                style = styles[index];
+            if (index >= 0) style = styles[index];
             else
             {
                 styles.Add(style);

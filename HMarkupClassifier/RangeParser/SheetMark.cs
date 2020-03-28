@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using System.IO;
 
 namespace HMarkupClassifier.RangeParser
@@ -11,22 +11,19 @@ namespace HMarkupClassifier.RangeParser
     {
         private static readonly Regex sheetRegex = new Regex(@"\[(?<SheetName>[^\[\]]+)(?<Marks>(?:\[(?:(?:Tb)|(?:Mk-2))[^\[\]]+(?:\[[^\[\]]+\])*\])+)\]", RegexOptions.Compiled);
         private static readonly Regex markRegex = new Regex(@"\[Mk(?<Type>-?\d)\$(?<Left>[A-Z]+)\$(?<Top>\d+)(?::\$(?<Right>[A-Z]+)\$(?<Bottom>\d+))?\]", RegexOptions.Compiled);
+        
         private List<Mark> marks;
-
         private SheetMark(List<Mark> marks) => this.marks = marks;
-
+        // 解析range文件
         public static Dictionary<string, SheetMark> ParseRange(string rangeFile)
         {
             string rangeString = File.ReadAllText(rangeFile);
-            var sheetMatches = sheetRegex.Matches(rangeString);
             Dictionary<string, SheetMark> sheetMarks = new Dictionary<string, SheetMark>();
-            foreach (Match sheetMatch in sheetMatches)
+            foreach (Match sheetMatch in sheetRegex.Matches(rangeString))
             {
                 string sheetName = sheetMatch.Groups["SheetName"].Value;
-                string marksString = sheetMatch.Groups["Marks"].Value;
                 List<Mark> marks = new List<Mark>();
-                var marksMatches = markRegex.Matches(marksString);
-                foreach (Match marksMatch in marksMatches)
+                foreach (Match marksMatch in markRegex.Matches(sheetMatch.Groups["Marks"].Value))
                 {
                     int type, left, top, right, bottom;
                     type = Convert.ToInt32(marksMatch.Groups["Type"].Value);
@@ -48,7 +45,7 @@ namespace HMarkupClassifier.RangeParser
             }
             return sheetMarks;
         }
-
+        // 判断单元格类型(是否为表头)
         public int GetCellType(int col, int row)
         {
             int type = 3;
@@ -56,7 +53,7 @@ namespace HMarkupClassifier.RangeParser
                 if (type != mark.GetCellType(col, row)) return mark.GetCellType(col, row);
             return type;
         }
-
+        // ToString
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();
