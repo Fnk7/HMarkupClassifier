@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 
 using ClosedXML.Excel;
 
@@ -15,11 +15,10 @@ namespace HMarkupClassifier.SheetParser
         public SheetInfo info;
         private CellFeature[,] cells;
 
-
         private SheetFeature(IXLWorksheet sheet)
         {
             info = new SheetInfo(sheet);
-            IXLRange usedCells = sheet.RangeUsed(XLCellsUsedOptions.All);
+            IXLRange usedCells = sheet.RangeUsed();
             cells = new CellFeature[info.NumCol, info.NumRow];
             foreach (var cell in usedCells.Cells())
             {
@@ -27,18 +26,43 @@ namespace HMarkupClassifier.SheetParser
                 int row = cell.Address.RowNumber - info.top;
                 cells[col, row] = new CellFeature(cell, info);
             }
+            SetFormulaReference();
             info.SetIndex();
             for (int i = 0; i < info.NumCol; i++)
                 for (int j = 0; j < info.NumRow; j++)
                 {
-                    if (i != 0)
-                        cells[i, j].SetPosition(0, cells[i - 1, j]);
-                    if (j != 0)
-                        cells[i, j].SetPosition(1, cells[i, j - 1]);
-                    if (i != info.NumCol - 1)
-                        cells[i, j].SetPosition(2, cells[i + 1, j]);
-                    if (j != info.NumRow - 1)
-                        cells[i, j].SetPosition(3, cells[i, j + 1]);
+                    if (i != 0) cells[i, j].SetNeighbors(0, cells[i - 1, j]);
+                    if (j != 0) cells[i, j].SetNeighbors(1, cells[i, j - 1]);
+                    if (i != info.NumCol - 1) cells[i, j].SetNeighbors(2, cells[i + 1, j]);
+                    if (j != info.NumRow - 1) cells[i, j].SetNeighbors(3, cells[i, j + 1]);
+                    for (int k = 0; k < info.NumCol; k++)
+                        if (i - 1 - k >= 0 && cells[i - 1 - k, j].empty == 0)
+                        {
+                            cells[i, j].SetNonEmptyNeighbors(1, cells[i - 1 - k, j]);
+                            cells[i, j].leftDistance = k;
+                            break;
+                        }
+                    for (int k = 0; k < info.NumRow; k++)
+                        if (j - 1 - k >= 0 && cells[i, j - 1 - k].empty == 0)
+                        {
+                            cells[i, j].SetNonEmptyNeighbors(1, cells[i, j - 1 - k]);
+                            cells[i, j].topDistance = k;
+                            break;
+                        }
+                    for (int k = 0; k < info.NumCol; k++)
+                        if (i + 1 + k <= info.NumCol - 1 && cells[i + 1 + k, j].empty == 0)
+                        {
+                            cells[i, j].SetNonEmptyNeighbors(1, cells[i + 1 + k, j]);
+                            cells[i, j].rightDistance = k;
+                            break;
+                        }
+                    for (int k = 0; k < info.NumRow; k++)
+                        if (j + 1 + k <= info.NumRow - 1 && cells[i, j + 1 + k].empty == 0)
+                        {
+                            cells[i, j].SetNonEmptyNeighbors(1, cells[i, j + 1 + k]);
+                            cells[i, j].bottomDistance = k;
+                            break;
+                        }
                 }
         }
 
@@ -66,8 +90,33 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public override string ToString()
-            => info.ToString();
+        public void SetFormulaReference()
+        {
+            foreach (var temp in info.formulas)
+            {
+                var formula = temp.ToUpper();
+                foreach (Match match in Formula.A1Regex.Matches(formula))
+                {
+                    int col = Utils.ParseColumn(match.Groups["Col"].Value);
+                    int row = Convert.ToInt32(match.Groups["Row"].Value);
+                    if(info.ValidAddress(col, row))
+                        cells[col - info.left, row - info.top].isReferenced = 1;
+                }
+                foreach (Match match in Formula.A1A1Regex.Matches(formula))
+                {
+                    int left = Utils.ParseColumn(match.Groups["Left"].Value);
+                    int top = Convert.ToInt32(match.Groups["Top"].Value);
+                    int right = Utils.ParseColumn(match.Groups["Right"].Value);
+                    int bottom = Convert.ToInt32(match.Groups["Bottom"].Value);
+                    for (int i = left; i <= right; i++)
+                        for (int j = top; j <= bottom; j++)
+                            if(info.ValidAddress(i, j))
+                                cells[i - info.left, j - info.top].isReferenced = 1;
+                }
+            }
+        }
+
+        public override string ToString() => info.ToString();
     }
 
     class SheetInfo
@@ -78,11 +127,20 @@ namespace HMarkupClassifier.SheetParser
 
         public double width, height;
 
+        public List<string> formulas = new List<string>();
+
         public List<Style> styles = new List<Style>();
         public List<Alignment> alignments = new List<Alignment>();
         public List<Border> borders = new List<Border>();
         public List<Fill> fills = new List<Fill>();
         public List<Font> fonts = new List<Font>();
+
+        public bool ValidAddress(int col, int row)
+        {
+            if (col < left || col > right || row < top || row > bottom) return false;
+            return true;
+        }
+
 
         public SheetInfo(IXLWorksheet sheet)
         {
@@ -93,7 +151,7 @@ namespace HMarkupClassifier.SheetParser
             fills.Add(style.fill);
             fonts.Add(style.font);
 
-            IXLRange usedCells = sheet.RangeUsed(XLCellsUsedOptions.All);
+            IXLRange usedCells = sheet.RangeUsed();
             left = usedCells.RangeAddress.FirstAddress.ColumnNumber;
             top = usedCells.RangeAddress.FirstAddress.RowNumber;
             right = usedCells.RangeAddress.LastAddress.ColumnNumber;
@@ -135,8 +193,8 @@ namespace HMarkupClassifier.SheetParser
                 if (colors.ContainsKey(style.fill.backColor)) colors[style.fill.backColor] += style.count;
                 else colors.Add(style.fill.backColor, style.count);
             }
-            var fontSorted = (from entry in fontNames orderby entry.Value ascending select entry.Key).ToList();
-            var colorSorted = (from entry in colors orderby entry.Value ascending select entry.Key).ToList();
+            var fontSorted = (from entry in fontNames orderby entry.Value descending select entry.Key).ToList();
+            var colorSorted = (from entry in colors orderby entry.Value descending select entry.Key).ToList();
             foreach (var style in styles)
             {
                 style.font.nameIndex = fontSorted.IndexOf(style.font.name);

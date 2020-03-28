@@ -30,7 +30,7 @@ namespace HMarkupClassifier.RangeParser
                 {
                     int type, left, top, right, bottom;
                     type = Convert.ToInt32(marksMatch.Groups["Type"].Value);
-                    left = ParseColumn(marksMatch.Groups["Left"].Value);
+                    left = Utils.ParseColumn(marksMatch.Groups["Left"].Value);
                     top = Convert.ToInt32(marksMatch.Groups["Top"].Value);
                     if (marksMatch.Groups["Right"].Value == "")
                     {
@@ -39,7 +39,7 @@ namespace HMarkupClassifier.RangeParser
                     }
                     else
                     {
-                        right = ParseColumn(marksMatch.Groups["Right"].Value);
+                        right = Utils.ParseColumn(marksMatch.Groups["Right"].Value);
                         bottom = Convert.ToInt32(marksMatch.Groups["Bottom"].Value);
                     }
                     marks.Add(new Mark(type, left, top, right, bottom));
@@ -47,14 +47,6 @@ namespace HMarkupClassifier.RangeParser
                 if (marks.Count != 0) sheetMarks.Add(sheetName, new SheetMark(marks));
             }
             return sheetMarks;
-        }
-
-        private static int ParseColumn(string col)
-        {
-            int temp = 0;
-            foreach (var c in col)
-                temp = temp * 26 + c - 'A' + 1;
-            return temp;
         }
 
         public int GetCellType(int col, int row)

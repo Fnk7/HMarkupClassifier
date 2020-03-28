@@ -23,9 +23,10 @@ namespace HMarkupClassifier.SheetParser
             if (self.style.font.Equals(cell.style.font)) side.font = 1;
             if (self.width == cell.width) side.width = 1;
             if (self.height == cell.height) side.height = 1;
-            if (side.dataType == cell.dataType) side.dataType = 1;
-            side.dataTypeValue = cell.dataType;
+            side.dataType = cell.dataType;
             side.empty = cell.empty;
+            side.words = cell.words;
+            side.referenced = cell.isReferenced;
         }
 
         public static string csvTitle = $"{Side.csvTitle},{Side.csvTitle},{Side.csvTitle},{Side.csvTitle}";
@@ -44,12 +45,13 @@ namespace HMarkupClassifier.SheetParser
         public byte height = 0;
 
         public byte dataType = 0;
-        public byte dataTypeValue = 0;
-        public byte empty = 0;
+        public byte empty = 1;
+        public int words = 0;
+        public byte referenced = 0;
 
-        public static string csvTitle = "styleDiff,dataTypeDiff,neighborDataType,neighberEmpty";
+        public static string csvTitle = "StyleDiff,NeighborDataType,NeighborEmpty,NeighborWords,NeighborRfd";
 
         public string CSVString()
-            => $"{style + alignment + fill + font + width + height},{dataType},{dataTypeValue},{empty}";
+            => $"{style + alignment + fill + font + width + height},{dataType},{empty},{words},{referenced}";
     }
 }

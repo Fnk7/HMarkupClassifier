@@ -3,14 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using System.Text.RegularExpressions;
+
 using ClosedXML.Excel;
 using HMarkupClassifier.SheetParser;
 using HMarkupClassifier.RangeParser;
+using System.Text;
 
 namespace HMarkupClassifier
 {
     public static class Utils
     {
+        public static int ParseColumn(string col)
+        {
+            int temp = 0;
+            foreach (var c in col)
+                temp = temp * 26 + c - 'A' + 1;
+            return temp;
+        }
+
         public static void ParseDataset(string dataset, string target)
         {
             if (!Directory.Exists(target))
@@ -21,6 +32,7 @@ namespace HMarkupClassifier
             var rangeFiles = Directory.GetFiles(dataset, "*.range");
             int sheetIndex = 1;
             using (StreamWriter infoWriter = new StreamWriter(Path.Combine(target, "Info.txt")))
+            using (StreamWriter writer = new StreamWriter("D:\\formulas.txt"))
             {
                 foreach (var rangeFile in rangeFiles)
                 {
@@ -29,6 +41,7 @@ namespace HMarkupClassifier
                     {
                         infoWriter.WriteLine(rangeFile);
                         infoWriter.WriteLine(workbookFile);
+                        Console.WriteLine(workbookFile);
                         Dictionary<string, SheetMark> sheetMarks = SheetMark.ParseRange(rangeFile);
                         using (XLWorkbook book = new XLWorkbook(workbookFile))
                         {
@@ -36,17 +49,17 @@ namespace HMarkupClassifier
                                 if (sheetMarks.ContainsKey(sheet.Name))
                                     try
                                     {
+                                        Console.WriteLine(sheet.Name);
                                         SheetFeature feature = SheetFeature.ParseSheet(sheet);
                                         string path = Path.Combine(target, $"Sheet{sheetIndex:D3}.csv");
                                         feature.WriteIntoCSV(path, sheetMarks[sheet.Name]);
                                         infoWriter.WriteLine($"{sheet.Name}\tSheet{sheetIndex:D3}.csv");
                                         sheetIndex++;
                                     }
-                                    catch (Exception ex)
+                                    catch (ParseFailException ex)
                                     {
-                                        infoWriter.Write(sheet.Name);
-                                        infoWriter.Write("\t");
-                                        infoWriter.WriteLine(ex.Message);
+                                        infoWriter.WriteLine($"{sheet.Name}\t{ex.Message}");
+                                        Console.WriteLine($"{sheet.Name}\t{ex.Message}");
                                     }
                         }
                         infoWriter.WriteLine();
@@ -60,12 +73,12 @@ namespace HMarkupClassifier
         public static void Test()
         {
             Console.WriteLine("Test start...");
-            using (XLWorkbook book = new XLWorkbook("D:\\Workspace\\HMarkupDataset\\Annotated\\02rise.xlsx"))
+            using (XLWorkbook book = new XLWorkbook("D:\\test.xlsx"))
             {
-                var sheet = book.Worksheet("Companies");
-                foreach (var cell in sheet.RangeUsed(XLCellsUsedOptions.All).Cells())
+                foreach (var sheet in book.Worksheets)
                 {
-                    Console.WriteLine($"{cell.Address.ToString()}\t{cell.Style.NumberFormat.Format}");
+                    if (sheet.IsEmpty()) continue;
+                    SheetFeature feature = SheetFeature.ParseSheet(sheet);
                 }
             }
             Console.WriteLine("Test end...");
