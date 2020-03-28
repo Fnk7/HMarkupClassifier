@@ -9,6 +9,7 @@ namespace HMarkupClassifier.SheetParser
         // Cell Style
         public Style style;
         public byte merged;
+        public byte hide;
         public double width, height, fontWidth, fontHeight;
         public double widthRatio, heightRatio;
 
@@ -23,6 +24,8 @@ namespace HMarkupClassifier.SheetParser
         public byte hasHyperlink;
         public byte hasComment;
         // Content
+        private static readonly Regex likeYearRegex = new Regex(@"^(?:19)|(?:20)\d{2}$");
+        private byte likeYear;
         private static readonly Regex beginNumRegex = new Regex(@"^(?:[\W]*\d+)[^\d]+", RegexOptions.Compiled);
         public byte beginNumber;
         private static readonly Regex beginSpecialRegex = new Regex(@"^[\W]", RegexOptions.Compiled);
@@ -42,6 +45,7 @@ namespace HMarkupClassifier.SheetParser
         public float leftRatio, topRatio;
         public Position neighbors = new Position();
         public Position nonEmptyNeighbors = new Position();
+        public byte[] neighborHide = { 0, 0, 0, 0};
         public int leftDistance, topDistance, rightDistance, bottomDistance;
 
         public CellFeature(IXLCell cell, SheetInfo info)
@@ -59,6 +63,8 @@ namespace HMarkupClassifier.SheetParser
             // Cell Style
             style = info.GetStyle(cell.Style);
             merged = (byte)(cell.IsMerged() ? 1 : 0);
+            if (cell.WorksheetRow().IsHidden || cell.WorksheetColumn().IsHidden)
+                hide = 1;
             width = cell.WorksheetColumn().Width;
             fontWidth = width / style.font.size;
             height = cell.WorksheetRow().Height;
@@ -88,6 +94,7 @@ namespace HMarkupClassifier.SheetParser
             if (empty == 0)
             {
                 words = Regex.Split(value, @"\W+").Length;
+                likeYear = (byte)(likeYearRegex.IsMatch(value.Trim()) ? 1 : 0);
                 beginNumber = (byte)(beginNumRegex.IsMatch(value) ? 1 : 0);
                 beginSpecial = (byte)(beginSpecialRegex.IsMatch(value) ? 1 : 0);
                 symbols = (byte)(symbolsRegex.IsMatch(value) ? 1 : 0);
@@ -99,25 +106,30 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public void SetNeighbors(int sideIndex, CellFeature cell) => neighbors.SetPosition(sideIndex, this, cell);
-
+        public void SetNeighbors(int sideIndex, CellFeature cell)
+        {
+            neighborHide[sideIndex] = cell.hide;
+            neighbors.SetPosition(sideIndex, this, cell);
+        }
         public void SetNonEmptyNeighbors(int sideIndex, CellFeature cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
 
         public static string csvTitle = $"col,row," +
-               $"{Style.csvTitle},Merged,FontWidth,FontHeight,WidthRatio,HeightRatio," +
+               $"{Style.csvTitle},Merged,Hide,FontWidth,FontHeight,WidthRatio,HeightRatio," +
                $"DataType,Words,empty," +
-               $"BeginNumber,BeginSpecial,Symbols,Punctuation,AllNumber,AllUpper,TextWidth" +
+               $"LikeYear,BeginNumber,BeginSpecial,Symbols,Punctuation,AllNumber,AllUpper,TextWidth," +
                $"IsReferenced,ArrayFormula,Comment,Hyperlink,Formula," +
                $"LeftDistance,TopDistance,RightDistance,BottomDistance," +
+               $"neighborHide1,neighborHide2,neighborHide3,neighborHide4," +
                $"LeftRatio,TopRatio,{Position.csvTitle},{Position.csvTitle}";
 
         public string CSVString()
             => $"{col},{row}," +
-               $"{style.CSVString()},{merged},{fontWidth},{fontHeight},{widthRatio},{heightRatio}," +
+               $"{style.CSVString()},{merged},{hide},{fontWidth},{fontHeight},{widthRatio},{heightRatio}," +
                $"{dataType},{words},{empty}," +
-               $"{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper},{textWidth}" +
+               $"{likeYear},{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper},{textWidth}," +
                $"{isReferenced},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +
                $"{leftDistance},{topDistance},{rightDistance},{bottomDistance}," +
+               $"{neighborHide[0]},{neighborHide[1]},{neighborHide[2]},{neighborHide[3]}," +
                $"{leftRatio},{topRatio},{neighbors.CSVString()},{nonEmptyNeighbors.CSVString()}";
     }
 }
