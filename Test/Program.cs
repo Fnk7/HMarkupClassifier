@@ -1,4 +1,5 @@
 ﻿using System;
+using HMarkupClassifier;
 
 namespace Test
 {
@@ -7,8 +8,9 @@ namespace Test
         static void Main(string[] args)
         {
             Console.WriteLine("Start...");
-            HMarkupClassifier.Utils.ParseDataset("D:\\Workspace\\HMarkupDataset\\Annotated", "D:\\Workspace\\HMarkupDataset\\CSV-12");
-            //HMarkupClassifier.Utils.Test();
+            Utils.ParseDataset(Utils.annotatedDataset, Utils.csvDataset);
+            Utils.RunPython(Utils.pythonFile, $"train {Utils.csvDataset} {Utils.pythonModel}");
+            Utils.RunPython(Utils.pythonFile, $"predict {Utils.pythonModel}");
             Console.WriteLine("Finish.");
         }
     }

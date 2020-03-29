@@ -11,6 +11,11 @@ namespace HMarkupClassifier
 {
     public static class Utils
     {
+        public static string annotatedDataset = "D:\\Workspace\\HMarkupDataset\\Annotated";
+        public static string csvDataset = "D:\\Workspace\\HMarkupDataset\\CSV-13";
+        public static string pythonFile = "D:\\Workspace\\Python\\HMarkup\\main.py";
+        public static string pythonModel = csvDataset + "\\forest.model";
+
         public static int ParseColumn(string col)
         {
             int temp = 0;
@@ -61,17 +66,29 @@ namespace HMarkupClassifier
         }
 
 
+        public static int RunPython(string pythonFile, string argument)
+        {
+            using (System.Diagnostics.Process process = new System.Diagnostics.Process())
+            {
+                process.StartInfo.FileName = "python";
+                process.StartInfo.Arguments = $"{pythonFile} {argument}";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.Start();
+                process.WaitForExit();
+                var message = process.StandardOutput.ReadToEnd();
+                Console.WriteLine(message);
+                return process.ExitCode;
+            }
+        }
+
+
         public static void Test()
         {
             Console.WriteLine("Test start...");
-            using (XLWorkbook book = new XLWorkbook("D:\\test.xlsx"))
-            {
-                foreach (var sheet in book.Worksheets)
-                {
-                    if (sheet.IsEmpty()) continue;
-                    SheetFeature feature = SheetFeature.ParseSheet(sheet);
-                }
-            }
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
             Console.WriteLine("Test end...");
         }
     }
