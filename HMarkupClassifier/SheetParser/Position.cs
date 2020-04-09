@@ -16,9 +16,9 @@ namespace HMarkupClassifier.SheetParser
         {
             var side = sides[sideIndex];
             if (self.style.Equals(cell.style)) side.style += 1;
-            if (self.style.alg.Equals(cell.style.alg)) side.style += 1;
-            if (self.style.fill.Equals(cell.style.fill)) side.style += 1;
-            if (self.style.font.Equals(cell.style.font)) side.style += 1;
+            if (self.style.Alignment.Equals(cell.style.Alignment)) side.style += 1;
+            if (self.style.Fill.Equals(cell.style.Fill)) side.style += 1;
+            if (self.style.Font.Equals(cell.style.Font)) side.style += 1;
             side.datatype = cell.dataType;
             side.refered = cell.isReferenced;
             side.formula = cell.hasFormula;

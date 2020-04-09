@@ -2,6 +2,8 @@
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 
+using HMarkupClassifier.SheetParser.Styles;
+
 namespace HMarkupClassifier.SheetParser
 {
     class XCellAbd
@@ -38,7 +40,6 @@ namespace HMarkupClassifier.SheetParser
         public byte allUpper;
         private static readonly Regex allNumberRegex = new Regex(@"^(?:[^\p{L}]*\d+[^\p{L}]*)+$", RegexOptions.Compiled);
         public byte allNumber;
-        public double textWidth;
 
         // Position Feature
         public int col, row;
@@ -60,9 +61,9 @@ namespace HMarkupClassifier.SheetParser
             if (cell.WorksheetRow().IsHidden || cell.WorksheetColumn().IsHidden)
                 hide = 1;
             width = cell.WorksheetColumn().Width;
-            fontWidth = width / style.font.size;
+            fontWidth = width / style.Font.Size;
             height = cell.WorksheetRow().Height;
-            fontHeight = height / style.font.size;
+            fontHeight = height / style.Font.Size;
             widthRatio = width / info.width;
             heightRatio = height / info.height;
 
@@ -95,8 +96,6 @@ namespace HMarkupClassifier.SheetParser
                 punctuation = (byte)(punctuationRegex.IsMatch(value) ? 1 : 0);
                 allUpper = (byte)(hasLowerRegex.IsMatch(value) ? 0 : 1);
                 allNumber = (byte)(allNumberRegex.IsMatch(value) ? 1 : 0);
-                if (value.Length != 0)
-                    textWidth = fontWidth / value.Length;
             }
         }
 
@@ -108,16 +107,16 @@ namespace HMarkupClassifier.SheetParser
 
         public static string csvTitle = $"col,row,empty," +
                $"{Style.CSVTitle},merged,hide," +
-               $"datatype,Words," +
-               $"LikeYear,BeginNumber,BeginSpecial,Symbols,Punctuation,AllNumber,AllUpper,TextWidth," +
-               $"IsReferenced,ArrayFormula,Comment,Hyperlink,Formula," +
+               $"datatype,words," +
+               $"likeyear,beginnum,beginspecial,symbolspunctuation,allnum,allupper," +
+               $"isreferenced,arrayformula,comment,hyperlink,formula," +
                $"LeftRatio,TopRatio,{Position.CSVTitle},{Position.CSVTitle}";
 
         public string CSVString()
             => $"{col},{row},{empty}," +
-               $"{style.CSVString()},{merged},{hide}," +
+               $"{style},{merged},{hide}," +
                $"{dataType},{words}," +
-               $"{likeYear},{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper},{textWidth}," +
+               $"{likeYear},{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper}," +
                $"{isReferenced},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +
                $"{leftRatio},{topRatio},{neighbors.CSVString()},{nonEmptyNeighbors.CSVString()}";
     }

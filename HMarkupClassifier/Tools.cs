@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using HMarkupClassifier.SheetParser;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
@@ -22,10 +23,12 @@ namespace HMarkupClassifier
                 throw new Exception("CSV Dataset Not Empty.");
 
             int sheetIndex = 1;
-            var markFiles = Directory.GetFiles(markDst, "*.range|*.mark");
+            var markFiles = Directory.GetFiles(markDst, "*.mark");
+            var rangeFiles = Directory.GetFiles(markDst, "*.range");
+            var files = new List<string>(markFiles).Concat(rangeFiles);
             using (StreamWriter infoWriter = new StreamWriter(Path.Combine(CSVDst, "Info.txt")))
             {
-                foreach (var markFile in markFiles)
+                foreach (var markFile in files)
                 {
                     infoWriter.WriteLine(markFile);
                     var workbookFile = markFile.Substring(0, markFile.LastIndexOf('.')) + xlsx;

@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using HMarkupClassifier.MarkParser;
 using HMarkupClassifier.RangeParser;
+using HMarkupClassifier.SheetParser.Styles;
 
 namespace HMarkupClassifier.SheetParser
 {
@@ -20,6 +21,10 @@ namespace HMarkupClassifier.SheetParser
             info = new SheetInfo(sheet);
             IXLRange usedCells = sheet.RangeUsed();
             cells = new XCellAbd[info.NumCol, info.NumRow];
+            if (info.NumCol * info.NumRow > 1000)
+            {
+                throw new ParseFailException("Too large range.");
+            }
             foreach (var cell in usedCells.Cells())
             {
                 int col = cell.Address.ColumnNumber - info.left;
@@ -39,28 +44,24 @@ namespace HMarkupClassifier.SheetParser
                         if (i - 1 - k >= 0 && cells[i - 1 - k, j].empty == 0)
                         {
                             cells[i, j].SetNonEmptyNeighbors(0, cells[i - 1 - k, j]);
-                            cells[i, j].leftDistance = k;
                             break;
                         }
                     for (int k = 0; k < info.NumRow; k++)
                         if (j - 1 - k >= 0 && cells[i, j - 1 - k].empty == 0)
                         {
                             cells[i, j].SetNonEmptyNeighbors(1, cells[i, j - 1 - k]);
-                            cells[i, j].topDistance = k;
                             break;
                         }
                     for (int k = 0; k < info.NumCol; k++)
                         if (i + 1 + k <= info.NumCol - 1 && cells[i + 1 + k, j].empty == 0)
                         {
                             cells[i, j].SetNonEmptyNeighbors(2, cells[i + 1 + k, j]);
-                            cells[i, j].rightDistance = k;
                             break;
                         }
                     for (int k = 0; k < info.NumRow; k++)
                         if (j + 1 + k <= info.NumRow - 1 && cells[i, j + 1 + k].empty == 0)
                         {
                             cells[i, j].SetNonEmptyNeighbors(3, cells[i, j + 1 + k]);
-                            cells[i, j].bottomDistance = k;
                             break;
                         }
                 }
@@ -161,10 +162,10 @@ namespace HMarkupClassifier.SheetParser
         {
             Style style = new Style(sheet.Style);
             styles.Add(new Style(sheet.Style));
-            alignments.Add(style.alg);
-            borders.Add(style.bdr);
-            fills.Add(style.fill);
-            fonts.Add(style.font);
+            alignments.Add(style.Alignment);
+            borders.Add(style.Border);
+            fills.Add(style.Fill);
+            fonts.Add(style.Font);
 
             IXLRange usedCells = sheet.RangeUsed();
             left = usedCells.RangeAddress.FirstAddress.ColumnNumber;
@@ -183,10 +184,10 @@ namespace HMarkupClassifier.SheetParser
             else
             {
                 styles.Add(style);
-                if (!alignments.Contains(style.alg)) alignments.Add(style.alg);
-                if (!borders.Contains(style.bdr)) borders.Add(style.bdr);
-                if (!fills.Contains(style.fill)) fills.Add(style.fill);
-                if (!fonts.Contains(style.font)) fonts.Add(style.font);
+                if (!alignments.Contains(style.Alignment)) alignments.Add(style.Alignment);
+                if (!borders.Contains(style.Border)) borders.Add(style.Border);
+                if (!fills.Contains(style.Fill)) fills.Add(style.Fill);
+                if (!fonts.Contains(style.Font)) fonts.Add(style.Font);
             }
             style.count++;
             return style;
@@ -198,23 +199,23 @@ namespace HMarkupClassifier.SheetParser
             Dictionary<int, int> colors = new Dictionary<int, int>();
             foreach (var style in styles)
             {
-                if (fontNames.ContainsKey(style.font.name)) fontNames[style.font.name] += style.count;
-                else fontNames.Add(style.font.name, style.count);
-                if (colors.ContainsKey(style.font.color)) colors[style.font.color] += style.count;
-                else colors.Add(style.font.color, style.count);
-                if (colors.ContainsKey(style.fill.foreColor)) colors[style.fill.foreColor] += style.count;
-                else colors.Add(style.fill.foreColor, style.count);
-                if (colors.ContainsKey(style.fill.backColor)) colors[style.fill.backColor] += style.count;
-                else colors.Add(style.fill.backColor, style.count);
+                if (fontNames.ContainsKey(style.Font.Name)) fontNames[style.Font.Name] += style.count;
+                else fontNames.Add(style.Font.Name, style.count);
+                if (colors.ContainsKey(style.Font.Color)) colors[style.Font.Color] += style.count;
+                else colors.Add(style.Font.Color, style.count);
+                if (colors.ContainsKey(style.Fill.PtnColor)) colors[style.Fill.PtnColor] += style.count;
+                else colors.Add(style.Fill.PtnColor, style.count);
+                if (colors.ContainsKey(style.Fill.BckColor)) colors[style.Fill.BckColor] += style.count;
+                else colors.Add(style.Fill.BckColor, style.count);
             }
             var fontSorted = (from entry in fontNames orderby entry.Value descending select entry.Key).ToList();
             var colorSorted = (from entry in colors orderby entry.Value descending select entry.Key).ToList();
             foreach (var style in styles)
             {
-                style.font.nameIndex = fontSorted.IndexOf(style.font.name);
-                style.font.colorIndex = colorSorted.IndexOf(style.font.color);
-                style.fill.foreIndex = colorSorted.IndexOf(style.fill.foreColor);
-                style.fill.backIndex = colorSorted.IndexOf(style.fill.backColor);
+                style.Font.NameIndex = fontSorted.IndexOf(style.Font.Name);
+                style.Font.ColorIndex = colorSorted.IndexOf(style.Font.Color);
+                style.Fill.PtnIndex = colorSorted.IndexOf(style.Fill.PtnColor);
+                style.Fill.BckIndex = colorSorted.IndexOf(style.Fill.BckColor);
             }
         }
 

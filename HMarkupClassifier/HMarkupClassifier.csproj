@@ -64,14 +64,19 @@
     <Compile Include="SheetParser\Content.cs" />
     <Compile Include="SheetParser\Format.cs" />
     <Compile Include="SheetParser\Statistic.cs" />
+    <Compile Include="SheetParser\Styles\Alignment.cs" />
+    <Compile Include="SheetParser\Styles\Border.cs" />
+    <Compile Include="SheetParser\Styles\Fill.cs" />
+    <Compile Include="SheetParser\Styles\Font.cs" />
+    <Compile Include="SheetParser\Styles\Style.cs" />
     <Compile Include="SheetParser\XCell.cs" />
     <Compile Include="SheetParser\XCellAbd.cs" />
     <Compile Include="SheetParser\Formula.cs" />
     <Compile Include="SheetParser\ParseFailException.cs" />
     <Compile Include="SheetParser\Position.cs" />
     <Compile Include="SheetParser\SheetFeature.cs" />
-    <Compile Include="SheetParser\Style.cs" />
     <Compile Include="SheetParser\XSheet.cs" />
+    <Compile Include="TestClosedXML.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -79,5 +84,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
