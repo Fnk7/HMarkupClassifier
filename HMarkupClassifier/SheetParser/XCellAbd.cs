@@ -4,7 +4,7 @@ using ClosedXML.Excel;
 
 namespace HMarkupClassifier.SheetParser
 {
-    class CellFeature
+    class XCellAbd
     {
         // Cell Style
         public Style style;
@@ -45,20 +45,14 @@ namespace HMarkupClassifier.SheetParser
         public float leftRatio, topRatio;
         public Position neighbors = new Position();
         public Position nonEmptyNeighbors = new Position();
-        public byte[] neighborHide = { 0, 0, 0, 0};
-        public int leftDistance, topDistance, rightDistance, bottomDistance;
 
-        public CellFeature(IXLCell cell, SheetInfo info)
+        public XCellAbd(IXLCell cell, SheetInfo info)
         {
             // Position
             col = cell.Address.ColumnNumber;
             row = cell.Address.RowNumber;
             leftRatio = (col - info.left) / (float)(info.NumCol);
             topRatio = (row - info.top) / (float)(info.NumRow);
-            leftDistance = col - info.left;
-            topDistance = row - info.top;
-            rightDistance = info.right - col;
-            bottomDistance = info.bottom - row;
 
             // Cell Style
             style = info.GetStyle(cell.Style);
@@ -106,30 +100,25 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public void SetNeighbors(int sideIndex, CellFeature cell)
+        public void SetNeighbors(int sideIndex, XCellAbd cell)
         {
-            neighborHide[sideIndex] = cell.hide;
             neighbors.SetPosition(sideIndex, this, cell);
         }
-        public void SetNonEmptyNeighbors(int sideIndex, CellFeature cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
+        public void SetNonEmptyNeighbors(int sideIndex, XCellAbd cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
 
-        public static string csvTitle = $"col,row," +
-               $"{Style.csvTitle},Merged,Hide,FontWidth,FontHeight,WidthRatio,HeightRatio," +
-               $"DataType,Words,empty," +
+        public static string csvTitle = $"col,row,empty," +
+               $"{Style.CSVTitle},merged,hide," +
+               $"datatype,Words," +
                $"LikeYear,BeginNumber,BeginSpecial,Symbols,Punctuation,AllNumber,AllUpper,TextWidth," +
                $"IsReferenced,ArrayFormula,Comment,Hyperlink,Formula," +
-               $"LeftDistance,TopDistance,RightDistance,BottomDistance," +
-               $"neighborHide1,neighborHide2,neighborHide3,neighborHide4," +
-               $"LeftRatio,TopRatio,{Position.csvTitle},{Position.csvTitle}";
+               $"LeftRatio,TopRatio,{Position.CSVTitle},{Position.CSVTitle}";
 
         public string CSVString()
-            => $"{col},{row}," +
-               $"{style.CSVString()},{merged},{hide},{fontWidth},{fontHeight},{widthRatio},{heightRatio}," +
-               $"{dataType},{words},{empty}," +
+            => $"{col},{row},{empty}," +
+               $"{style.CSVString()},{merged},{hide}," +
+               $"{dataType},{words}," +
                $"{likeYear},{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper},{textWidth}," +
                $"{isReferenced},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +
-               $"{leftDistance},{topDistance},{rightDistance},{bottomDistance}," +
-               $"{neighborHide[0]},{neighborHide[1]},{neighborHide[2]},{neighborHide[3]}," +
                $"{leftRatio},{topRatio},{neighbors.CSVString()},{nonEmptyNeighbors.CSVString()}";
     }
 }

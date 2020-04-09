@@ -13,18 +13,18 @@ namespace HMarkupClassifier.SheetParser
     class SheetFeature
     {
         public SheetInfo info;
-        private CellFeature[,] cells;
+        private XCellAbd[,] cells;
 
         private SheetFeature(IXLWorksheet sheet)
         {
             info = new SheetInfo(sheet);
             IXLRange usedCells = sheet.RangeUsed();
-            cells = new CellFeature[info.NumCol, info.NumRow];
+            cells = new XCellAbd[info.NumCol, info.NumRow];
             foreach (var cell in usedCells.Cells())
             {
                 int col = cell.Address.ColumnNumber - info.left;
                 int row = cell.Address.RowNumber - info.top;
-                cells[col, row] = new CellFeature(cell, info);
+                cells[col, row] = new XCellAbd(cell, info);
             }
             SetFormulaReference();
             info.SetIndex();
@@ -77,7 +77,7 @@ namespace HMarkupClassifier.SheetParser
         {
             using (StreamWriter writer = new StreamWriter(path))
             {
-                writer.WriteLine($"type,{CellFeature.csvTitle}");
+                writer.WriteLine($"type,{XCellAbd.csvTitle}");
                 if (markSheet != null)
                     foreach (var cell in cells)
                     {
@@ -95,7 +95,7 @@ namespace HMarkupClassifier.SheetParser
             using (StreamWriter writer = new StreamWriter(path))
             //using (StreamWriter map = new StreamWriter(path.Substring(0, path.LastIndexOf(".csv")) + ".cellmap"))
             {
-                writer.WriteLine($"type,{CellFeature.csvTitle}");
+                writer.WriteLine($"type,{XCellAbd.csvTitle}");
                 if (mark != null)
                     foreach (var cell in cells)
                     {
@@ -161,8 +161,8 @@ namespace HMarkupClassifier.SheetParser
         {
             Style style = new Style(sheet.Style);
             styles.Add(new Style(sheet.Style));
-            alignments.Add(style.alignment);
-            borders.Add(style.border);
+            alignments.Add(style.alg);
+            borders.Add(style.bdr);
             fills.Add(style.fill);
             fonts.Add(style.font);
 
@@ -183,8 +183,8 @@ namespace HMarkupClassifier.SheetParser
             else
             {
                 styles.Add(style);
-                if (!alignments.Contains(style.alignment)) alignments.Add(style.alignment);
-                if (!borders.Contains(style.border)) borders.Add(style.border);
+                if (!alignments.Contains(style.alg)) alignments.Add(style.alg);
+                if (!borders.Contains(style.bdr)) borders.Add(style.bdr);
                 if (!fills.Contains(style.fill)) fills.Add(style.fill);
                 if (!fonts.Contains(style.font)) fonts.Add(style.font);
             }

@@ -6,31 +6,42 @@ namespace HMarkupClassifier.SheetParser
     {
         public int count = 0;
 
-        public byte hasPrefix;
-        public byte numberFormat;
-        public Alignment alignment;
-        public Border border;
+        public int prefix;
+        public int numFormat;
+        public Alignment alg;
+        public Border bdr;
         public Fill fill;
         public Font font;
 
-        private string csv = null;
+        public string CSV = null;
 
         public Style(IXLStyle style)
         {
-            hasPrefix = (byte)(style.IncludeQuotePrefix ? 1 : 0);
-            numberFormat = (byte)(style.NumberFormat.NumberFormatId == 0 ? 0 : 1);
-            alignment = new Alignment(style.Alignment);
-            border = new Border(style.Border);
+            prefix = (byte)(style.IncludeQuotePrefix ? 1 : 0);
+            numFormat = (byte)(style.NumberFormat.NumberFormatId == 0 ? 0 : 1);
+            alg = new Alignment(style.Alignment);
+            bdr = new Border(style.Border);
             fill = new Fill(style.Fill);
             font = new Font(style.Font);
         }
 
+        public static string CSVTitle
+            = $"style-prefix,style-numformat,{Alignment.CSVTitle},{Border.CSVTitle},{Fill.CSVTitle},{Font.CSVTitle}";
+
+
+        public string ToCSV()
+        {
+            if (CSV == null)
+                CSV = $"{prefix},{numFormat},{alg.ToCSV()},{bdr.ToCSV()},{fill.ToCSV()},{font.ToCSV()}";
+            return CSV;
+        }
+
         public override int GetHashCode()
         {
-            int hashCode = hasPrefix;
-            hashCode = hashCode * 127 + numberFormat;
-            hashCode = hashCode * 127 + alignment.GetHashCode();
-            hashCode = hashCode * 127 + border.GetHashCode();
+            int hashCode = prefix;
+            hashCode = hashCode * 127 + numFormat;
+            hashCode = hashCode * 127 + alg.GetHashCode();
+            hashCode = hashCode * 127 + bdr.GetHashCode();
             hashCode = hashCode * 127 + fill.GetHashCode();
             hashCode = hashCode * 127 + font.GetHashCode();
             return hashCode;
@@ -40,25 +51,21 @@ namespace HMarkupClassifier.SheetParser
         {
             Style style = obj as Style;
             if (obj == null) return false;
-            if (hasPrefix == style.hasPrefix
-                && numberFormat == style.numberFormat
-                && alignment.Equals(style.alignment)
-                && border.Equals(style.border)
+            if (prefix == style.prefix
+                && numFormat == style.numFormat
+                && alg.Equals(style.alg)
+                && bdr.Equals(style.bdr)
                 && fill.Equals(style.fill)
                 && font.Equals(style.font))
                 return true;
             return false;
         }
 
-        public static string csvTitle
-            = $"Prefix,Format,{Alignment.csvTitle},{Border.csvTitle},{Fill.csvTitle},{Font.csvTitle}";
-
         public string CSVString()
         {
-            if (csv == null)
-                csv = $"{hasPrefix},{numberFormat},{alignment.CSVString()}," +
-                    $"{border.CSVString()},{fill.CSVString()},{font.CSVString()}";
-            return csv;
+            if (CSV == null)
+                CSV = $"{prefix},{numFormat},{alg.CSVString()},{bdr.CSVString()},{fill.CSVString()},{font.CSVString()}";
+            return CSV;
         }
     }
 
@@ -80,6 +87,12 @@ namespace HMarkupClassifier.SheetParser
             wrapText = alignment.WrapText ? 1 : 0;
             shrinkToFit = alignment.ShrinkToFit ? 1 : 0;
         }
+
+        public static string CSVTitle
+            = "alg-hor,alg-ver,alg-indent,alg-wrap,alg-shrink";
+
+        public string ToCSV()
+            => $"{horizontal},{vertical},{indent},{wrapText},{shrinkToFit}";
 
         public override int GetHashCode()
         {
@@ -103,9 +116,6 @@ namespace HMarkupClassifier.SheetParser
                 return true;
             return false;
         }
-
-        public static string csvTitle
-            = "Horizontal,Vertical-ALI,Indent,WrapText,ShrinkToFik";
 
         public string CSVString()
             => $"{horizontal},{vertical},{indent},{wrapText},{shrinkToFit}";
@@ -145,8 +155,11 @@ namespace HMarkupClassifier.SheetParser
             return false;
         }
 
-        public static string csvTitle
-            = "BorderLeft,BorderTop,BorderRight,BorderBottom";
+        public static string CSVTitle
+            = "bdr-left,bdr-top,bdr-right,bdr-bottom";
+
+        public string ToCSV()
+            => $"{left},{top},{right},{bottom}";
 
         public string CSVString()
             => $"{left},{top},{right},{bottom}";
@@ -185,8 +198,11 @@ namespace HMarkupClassifier.SheetParser
             return false;
         }
 
-        public static string csvTitle
-            = "Fill,ForeColor,BackColor";
+        public static string CSVTitle
+            = "fill-ptn,fill-fcolor,fill-bcolor";
+
+        public string ToCSV()
+            => $"{pattern},{foreColor},{backColor}";
 
         public string CSVString()
             => $"{pattern},{foreIndex},{backIndex}";
@@ -196,9 +212,9 @@ namespace HMarkupClassifier.SheetParser
     {
         byte bold;
         byte italic;
-        byte strikethrough;
+        byte strike;
         // 0-4 None is 2
-        byte underline;
+        byte line;
         // 0-2 Baseline is 0
         byte vertical;
         // 0-5 NotApplicable is 0
@@ -214,8 +230,8 @@ namespace HMarkupClassifier.SheetParser
         {
             bold = (byte)(font.Bold ? 1 : 0);
             italic = (byte)(font.Italic ? 1 : 0);
-            strikethrough = (byte)(font.Strikethrough ? 1 : 0);
-            underline = (byte)(font.Underline == XLFontUnderlineValues.None ? 0 : 1);
+            strike = (byte)(font.Strikethrough ? 1 : 0);
+            line = (byte)(font.Underline == XLFontUnderlineValues.None ? 0 : 1);
             vertical = (byte)(font.VerticalAlignment == XLFontVerticalTextAlignmentValues.Baseline ? 0 : 1);
             familyNumbering = (byte)(font.FontFamilyNumbering == XLFontFamilyNumberingValues.NotApplicable ? 0 : 1);
             color = font.FontColor.Color.ToArgb();
@@ -227,8 +243,8 @@ namespace HMarkupClassifier.SheetParser
         {
             int hashCode = bold;
             hashCode = hashCode * 127 + italic;
-            hashCode = hashCode * 127 + strikethrough;
-            hashCode = hashCode * 127 + underline;
+            hashCode = hashCode * 127 + strike;
+            hashCode = hashCode * 127 + line;
             hashCode = hashCode * 127 + vertical;
             hashCode = hashCode * 127 + familyNumbering;
             hashCode = hashCode * 127 + color;
@@ -243,8 +259,8 @@ namespace HMarkupClassifier.SheetParser
             if (font == null) return false;
             if (bold == font.bold
                 && italic == font.italic
-                && strikethrough == font.strikethrough
-                && underline == font.underline
+                && strike == font.strike
+                && line == font.line
                 && vertical == font.vertical
                 && familyNumbering == font.familyNumbering
                 && color == font.color
@@ -254,10 +270,13 @@ namespace HMarkupClassifier.SheetParser
             return false;
         }
 
-        public static string csvTitle
-            = "Bold,Italic,Strikethrough,Underline,Vertical-Font,FamilyNumbering,FontColor,FontSize,FontName";
+        public static string CSVTitle
+            = "fnt-bold,fnt-italic,fnt-strike,fnt-line,fnt-ver,fnt-color,fnt-size,fnt-name";
+
+        public string ToCSV()
+            => $"{bold},{italic},{strike},{line},{vertical},{color},{size},{nameIndex}";
 
         public string CSVString()
-            => $"{bold},{italic},{strikethrough},{underline},{vertical},{familyNumbering},{colorIndex},{size},{nameIndex}";
+            => $"{bold},{italic},{strike},{line},{vertical},{colorIndex},{size},{nameIndex}";
     }
 }
