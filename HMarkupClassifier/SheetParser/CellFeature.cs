@@ -28,7 +28,7 @@ namespace HMarkupClassifier.SheetParser
         private byte likeYear;
         private static readonly Regex beginNumRegex = new Regex(@"^(?:[\W]*\d+)[^\d]+", RegexOptions.Compiled);
         public byte beginNumber;
-        private static readonly Regex beginSpecialRegex = new Regex(@"^[\W]", RegexOptions.Compiled);
+        private static readonly Regex beginSpecialRegex = new Regex(@"^[^\p{L}]", RegexOptions.Compiled);
         public byte beginSpecial;
         private static readonly Regex symbolsRegex = new Regex(@"[\p{S}]", RegexOptions.Compiled & RegexOptions.CultureInvariant);
         public byte symbols;

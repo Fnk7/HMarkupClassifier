@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using ClosedXML.Excel;
-
+using HMarkupClassifier.MarkParser;
 using HMarkupClassifier.RangeParser;
 
 namespace HMarkupClassifier.SheetParser
@@ -38,7 +38,7 @@ namespace HMarkupClassifier.SheetParser
                     for (int k = 0; k < info.NumCol; k++)
                         if (i - 1 - k >= 0 && cells[i - 1 - k, j].empty == 0)
                         {
-                            cells[i, j].SetNonEmptyNeighbors(1, cells[i - 1 - k, j]);
+                            cells[i, j].SetNonEmptyNeighbors(0, cells[i - 1 - k, j]);
                             cells[i, j].leftDistance = k;
                             break;
                         }
@@ -52,14 +52,14 @@ namespace HMarkupClassifier.SheetParser
                     for (int k = 0; k < info.NumCol; k++)
                         if (i + 1 + k <= info.NumCol - 1 && cells[i + 1 + k, j].empty == 0)
                         {
-                            cells[i, j].SetNonEmptyNeighbors(1, cells[i + 1 + k, j]);
+                            cells[i, j].SetNonEmptyNeighbors(2, cells[i + 1 + k, j]);
                             cells[i, j].rightDistance = k;
                             break;
                         }
                     for (int k = 0; k < info.NumRow; k++)
                         if (j + 1 + k <= info.NumRow - 1 && cells[i, j + 1 + k].empty == 0)
                         {
-                            cells[i, j].SetNonEmptyNeighbors(1, cells[i, j + 1 + k]);
+                            cells[i, j].SetNonEmptyNeighbors(3, cells[i, j + 1 + k]);
                             cells[i, j].bottomDistance = k;
                             break;
                         }
@@ -71,6 +71,23 @@ namespace HMarkupClassifier.SheetParser
             if (sheet == null || sheet.IsEmpty())
                 throw new ParseFailException("Sheet is null or Empty.");
             return new SheetFeature(sheet);
+        }
+
+        public void WriteIntoCSV(string path, YSheet markSheet = null)
+        {
+            using (StreamWriter writer = new StreamWriter(path))
+            {
+                writer.WriteLine($"type,{CellFeature.csvTitle}");
+                if (markSheet != null)
+                    foreach (var cell in cells)
+                    {
+                        int type = markSheet.GetCellType(cell.col, cell.row);
+                        writer.WriteLine($"{type},{cell.CSVString()}");
+                    }
+                else
+                    foreach (var cell in cells)
+                        writer.WriteLine($"0,{cell.CSVString()}");
+            }
         }
 
         public void WriteIntoCSV(string path, SheetMark mark = null)

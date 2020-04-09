@@ -54,6 +54,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MarkParser\Mark.cs" />
+    <Compile Include="MarkParser\MarkParserTool.cs" />
+    <Compile Include="MarkParser\YSheet.cs" />
     <Compile Include="RangeParser\SheetMark.cs" />
     <Compile Include="SheetParser\CellFeature.cs" />
     <Compile Include="SheetParser\Formula.cs" />
@@ -61,6 +64,7 @@
     <Compile Include="SheetParser\Position.cs" />
     <Compile Include="SheetParser\SheetFeature.cs" />
     <Compile Include="SheetParser\Style.cs" />
+    <Compile Include="Tools.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

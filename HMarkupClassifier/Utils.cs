@@ -12,7 +12,7 @@ namespace HMarkupClassifier
     public static class Utils
     {
         public static string annotatedDataset = "D:\\Workspace\\HMarkupDataset\\Annotated";
-        public static string csvDataset = "D:\\Workspace\\HMarkupDataset\\CSV-13";
+        public static string csvDataset = "D:\\Workspace\\HMarkupDataset\\CSV-Final2";
         public static string pythonFile = "D:\\Workspace\\Python\\HMarkup\\main.py";
         public static string pythonModel = csvDataset + "\\forest.model";
 
