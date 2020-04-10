@@ -6,19 +6,18 @@ using System.Text.RegularExpressions;
 
 using ClosedXML.Excel;
 using HMarkupClassifier.MarkParser;
-using HMarkupClassifier.RangeParser;
 using HMarkupClassifier.SheetParser.Styles;
 
 namespace HMarkupClassifier.SheetParser
 {
     class SheetFeature
     {
-        public SheetInfo info;
+        public SheetInfoABD info;
         private XCellAbd[,] cells;
 
         private SheetFeature(IXLWorksheet sheet)
         {
-            info = new SheetInfo(sheet);
+            info = new SheetInfoABD(sheet);
             IXLRange usedCells = sheet.RangeUsed();
             cells = new XCellAbd[info.NumCol, info.NumRow];
             if (info.NumCol * info.NumRow > 1000)
@@ -91,7 +90,7 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public void WriteIntoCSV(string path, SheetMark mark = null)
+        public void WriteIntoCSV(string path, YSheet mark = null, bool b = false)
         {
             using (StreamWriter writer = new StreamWriter(path))
             //using (StreamWriter map = new StreamWriter(path.Substring(0, path.LastIndexOf(".csv")) + ".cellmap"))
@@ -114,23 +113,24 @@ namespace HMarkupClassifier.SheetParser
             foreach (var temp in info.formulas)
             {
                 var formula = temp.ToUpper();
-                foreach (Match match in Formula.A1Regex.Matches(formula))
-                {
-                    int col = Utils.ParseColumn(match.Groups["Col"].Value);
-                    int row = Convert.ToInt32(match.Groups["Row"].Value);
-                    if(info.ValidAddress(col, row))
-                        cells[col - info.left, row - info.top].isReferenced = 1;
-                }
-                foreach (Match match in Formula.A1A1Regex.Matches(formula))
+                foreach (Match match in XFormula.A1Regex.Matches(formula))
                 {
                     int left = Utils.ParseColumn(match.Groups["Left"].Value);
                     int top = Convert.ToInt32(match.Groups["Top"].Value);
-                    int right = Utils.ParseColumn(match.Groups["Right"].Value);
-                    int bottom = Convert.ToInt32(match.Groups["Bottom"].Value);
-                    for (int i = left; i <= right; i++)
-                        for (int j = top; j <= bottom; j++)
-                            if(info.ValidAddress(i, j))
-                                cells[i - info.left, j - info.top].isReferenced = 1;
+                    if (match.Groups["Right"].Value != string.Empty)
+                    {
+                        int right = Utils.ParseColumn(match.Groups["Right"].Value);
+                        int bottom = Convert.ToInt32(match.Groups["Bottom"].Value);
+                        for (int i = left; i <= right; i++)
+                            for (int j = top; j <= bottom; j++)
+                                if (info.ValidAddress(i, j))
+                                    cells[i - info.left, j - info.top].isReferenced = 1;
+
+                    }
+                    else if(info.ValidAddress(left, top))
+                    {
+                        cells[left - info.left, top - info.top].isReferenced = 1;
+                    }
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace HMarkupClassifier.SheetParser
         public override string ToString() => info.ToString();
     }
 
-    class SheetInfo
+    class SheetInfoABD
     {
         public int left, top, right, bottom;
         public int NumCol => right - left + 1;
@@ -148,20 +148,20 @@ namespace HMarkupClassifier.SheetParser
 
         public List<string> formulas = new List<string>();
 
-        public List<Style> styles = new List<Style>();
-        public List<Alignment> alignments = new List<Alignment>();
-        public List<Border> borders = new List<Border>();
-        public List<Fill> fills = new List<Fill>();
-        public List<Font> fonts = new List<Font>();
+        public List<XStyle> styles = new List<XStyle>();
+        public List<XAlignment> alignments = new List<XAlignment>();
+        public List<XBorder> borders = new List<XBorder>();
+        public List<XFill> fills = new List<XFill>();
+        public List<XFont> fonts = new List<XFont>();
 
         public bool ValidAddress(int col, int row)
             => !(col < left || col > right || row < top || row > bottom);
 
 
-        public SheetInfo(IXLWorksheet sheet)
+        public SheetInfoABD(IXLWorksheet sheet)
         {
-            Style style = new Style(sheet.Style);
-            styles.Add(new Style(sheet.Style));
+            XStyle style = new XStyle(sheet.Style);
+            styles.Add(new XStyle(sheet.Style));
             alignments.Add(style.Alignment);
             borders.Add(style.Border);
             fills.Add(style.Fill);
@@ -176,9 +176,9 @@ namespace HMarkupClassifier.SheetParser
             height = sheet.RowHeight;
         }
 
-        public Style GetStyle(IXLStyle xlStyle)
+        public XStyle GetStyle(IXLStyle xlStyle)
         {
-            Style style = new Style(xlStyle);
+            XStyle style = new XStyle(xlStyle);
             int index = styles.IndexOf(style);
             if (index >= 0) style = styles[index];
             else
@@ -195,12 +195,12 @@ namespace HMarkupClassifier.SheetParser
 
         public void SetIndex()
         {
-            Dictionary<string, int> fontNames = new Dictionary<string, int>();
+            Dictionary<int, int> fontNames = new Dictionary<int, int>();
             Dictionary<int, int> colors = new Dictionary<int, int>();
             foreach (var style in styles)
             {
-                if (fontNames.ContainsKey(style.Font.Name)) fontNames[style.Font.Name] += style.count;
-                else fontNames.Add(style.Font.Name, style.count);
+                if (fontNames.ContainsKey(style.Font.NameIndex)) fontNames[style.Font.NameIndex] += style.count;
+                else fontNames.Add(style.Font.NameIndex, style.count);
                 if (colors.ContainsKey(style.Font.Color)) colors[style.Font.Color] += style.count;
                 else colors.Add(style.Font.Color, style.count);
                 if (colors.ContainsKey(style.Fill.PtnColor)) colors[style.Fill.PtnColor] += style.count;
@@ -212,10 +212,10 @@ namespace HMarkupClassifier.SheetParser
             var colorSorted = (from entry in colors orderby entry.Value descending select entry.Key).ToList();
             foreach (var style in styles)
             {
-                style.Font.NameIndex = fontSorted.IndexOf(style.Font.Name);
-                style.Font.ColorIndex = colorSorted.IndexOf(style.Font.Color);
-                style.Fill.PtnIndex = colorSorted.IndexOf(style.Fill.PtnColor);
-                style.Fill.BckIndex = colorSorted.IndexOf(style.Fill.BckColor);
+                style.Font.NameIndex = fontSorted.IndexOf(style.Font.NameIndex);
+                style.Font.Color = colorSorted.IndexOf(style.Font.Color);
+                style.Fill.PtnColor = colorSorted.IndexOf(style.Fill.PtnColor);
+                style.Fill.BckColor = colorSorted.IndexOf(style.Fill.BckColor);
             }
         }
 

@@ -9,11 +9,9 @@ namespace HMarkupClassifier.SheetParser
     class XCellAbd
     {
         // Cell Style
-        public Style style;
-        public byte merged;
-        public byte hide;
-        public double width, height, fontWidth, fontHeight;
-        public double widthRatio, heightRatio;
+        public XStyle style;
+        public int merged;
+        public double width, height;
 
         // Value Feature
         public byte dataType;
@@ -47,7 +45,7 @@ namespace HMarkupClassifier.SheetParser
         public Position neighbors = new Position();
         public Position nonEmptyNeighbors = new Position();
 
-        public XCellAbd(IXLCell cell, SheetInfo info)
+        public XCellAbd(IXLCell cell, SheetInfoABD info)
         {
             // Position
             col = cell.Address.ColumnNumber;
@@ -58,14 +56,8 @@ namespace HMarkupClassifier.SheetParser
             // Cell Style
             style = info.GetStyle(cell.Style);
             merged = (byte)(cell.IsMerged() ? 1 : 0);
-            if (cell.WorksheetRow().IsHidden || cell.WorksheetColumn().IsHidden)
-                hide = 1;
             width = cell.WorksheetColumn().Width;
-            fontWidth = width / style.Font.Size;
             height = cell.WorksheetRow().Height;
-            fontHeight = height / style.Font.Size;
-            widthRatio = width / info.width;
-            heightRatio = height / info.height;
 
             // Formula
             if (cell.HasFormula)
@@ -106,7 +98,7 @@ namespace HMarkupClassifier.SheetParser
         public void SetNonEmptyNeighbors(int sideIndex, XCellAbd cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
 
         public static string csvTitle = $"col,row,empty," +
-               $"{Style.CSVTitle},merged,hide," +
+               $"{XStyle.CSVTitle},merged," +
                $"datatype,words," +
                $"likeyear,beginnum,beginspecial,symbolspunctuation,allnum,allupper," +
                $"isreferenced,arrayformula,comment,hyperlink,formula," +
@@ -114,7 +106,7 @@ namespace HMarkupClassifier.SheetParser
 
         public string CSVString()
             => $"{col},{row},{empty}," +
-               $"{style},{merged},{hide}," +
+               $"{style},{merged}," +
                $"{dataType},{words}," +
                $"{likeYear},{beginNumber},{beginSpecial},{symbols},{punctuation},{allNumber},{allUpper}," +
                $"{isReferenced},{hasArrayFormula},{hasComment},{hasHyperlink},{hasFormula}," +

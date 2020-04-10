@@ -1,12 +1,8 @@
 ﻿using ClosedXML.Excel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace HMarkupClassifier.SheetParser.Styles
 {
-    class Style
+    class XStyle
     {
         public int count = 0;
 
@@ -14,19 +10,19 @@ namespace HMarkupClassifier.SheetParser.Styles
         public int HasPrefix;
         public int NumFormat;
 
-        public Alignment Alignment;
-        public Border Border;
-        public Fill Fill;
-        public Font Font;
+        public XAlignment Alignment;
+        public XBorder Border;
+        public XFill Fill;
+        public XFont Font;
 
-        public Style(IXLStyle style)
+        public XStyle(IXLStyle style)
         {
             HasPrefix = style.IncludeQuotePrefix ? 1 : 0;
-            // TODO
-            Alignment = new Alignment(style.Alignment);
-            Border = new Border(style.Border);
-            Fill = new Fill(style.Fill);
-            Font = new Font(style.Font);
+            NumFormat = style.NumberFormat.NumberFormatId;
+            Alignment = new XAlignment(style.Alignment);
+            Border = new XBorder(style.Border);
+            Fill = new XFill(style.Fill);
+            Font = new XFont(style.Font);
         }
 
         public override int GetHashCode()
@@ -42,7 +38,7 @@ namespace HMarkupClassifier.SheetParser.Styles
 
         public override bool Equals(object obj)
         {
-            Style style = obj as Style;
+            XStyle style = obj as XStyle;
             if (obj == null) return false;
             if (HasPrefix == style.HasPrefix
                 && NumFormat == style.NumFormat
@@ -55,7 +51,7 @@ namespace HMarkupClassifier.SheetParser.Styles
         }
 
         public static string CSVTitle
-            = $"style-prefix,style-numformat,{Alignment.CSVTitle},{Border.CSVTitle},{Fill.CSVTitle},{Font.CSVTitle}";
+            = $"style-prefix,style-numformat,{XAlignment.CSVTitle},{XBorder.CSVTitle},{XFill.CSVTitle},{XFont.CSVTitle}";
 
         private string CSV = null;
         public override string ToString()

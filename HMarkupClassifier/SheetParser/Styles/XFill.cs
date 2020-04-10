@@ -2,14 +2,13 @@
 
 namespace HMarkupClassifier.SheetParser.Styles
 {
-    class Fill
+    struct XFill
     {
         // 0-18 None is 17, solid is 18
         public int Pattern;
         public int PtnColor, BckColor;
-        public int PtnIndex, BckIndex;
 
-        public Fill(IXLFill fill)
+        public XFill(IXLFill fill)
         {
             switch (fill.PatternType)
             {
@@ -35,23 +34,12 @@ namespace HMarkupClassifier.SheetParser.Styles
             return hashCode;
         }
 
-        public override bool Equals(object obj)
-        {
-            Fill fill = obj as Fill;
-            if (fill == null) return false;
-            if (Pattern == fill.Pattern
-                && PtnColor == fill.PtnColor
-                && BckColor == fill.BckColor)
-                return true;
-            return false;
-        }
-
         public static string CSVTitle
             = "fill-pattern,fill-fcolor,fill-bcolor";
 
         public override string ToString()
         {
-            return $"{Pattern},{PtnIndex},{BckIndex}";
+            return $"{Pattern},{PtnColor},{BckColor}";
         }
     }
 }

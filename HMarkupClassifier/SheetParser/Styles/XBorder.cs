@@ -2,12 +2,20 @@
 
 namespace HMarkupClassifier.SheetParser.Styles
 {
-    class Border
+    struct XBorder
     {
         // 0-13 None is 10
         public int left, top, right, bottom;
 
-        public int GetBorderValue(XLBorderStyleValues value)
+        public XBorder(IXLBorder border)
+        {
+            left = GetBorderValue(border.LeftBorder);
+            top = GetBorderValue(border.TopBorder);
+            right = GetBorderValue(border.RightBorder);
+            bottom = GetBorderValue(border.BottomBorder);
+        }
+
+        public static int GetBorderValue(XLBorderStyleValues value)
         {
             switch (value)
             {
@@ -20,14 +28,6 @@ namespace HMarkupClassifier.SheetParser.Styles
             }
         }
 
-        public Border(IXLBorder border)
-        {
-            left = GetBorderValue(border.LeftBorder);
-            top = GetBorderValue(border.TopBorder);
-            right = GetBorderValue(border.RightBorder);
-            bottom = GetBorderValue(border.BottomBorder);
-        }
-
         public override int GetHashCode()
         {
             int hashCode = left;
@@ -35,18 +35,6 @@ namespace HMarkupClassifier.SheetParser.Styles
             hashCode = (hashCode << 2) ^ right;
             hashCode = (hashCode << 2) ^ bottom;
             return hashCode;
-        }
-
-        public override bool Equals(object obj)
-        {
-            Border border = obj as Border;
-            if (border == null) return false;
-            if (left == border.left
-                && top == border.top
-                && right == border.right
-                && bottom == border.bottom)
-                return true;
-            return false;
         }
 
         public static string CSVTitle
