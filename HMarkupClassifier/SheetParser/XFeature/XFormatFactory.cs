@@ -1,12 +1,10 @@
 ﻿using ClosedXML.Excel;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace HMarkupClassifier.SheetParser
 {
-    class InfoSheet
+    class XFormatFactory
     {
         public int MaxStyles = 100;
         public Dictionary<XStyle, XStyle> styles = new Dictionary<XStyle, XStyle>();
@@ -30,68 +28,9 @@ namespace HMarkupClassifier.SheetParser
                     throw new ParseFailException($"Styles Count over {MaxStyles}");
                 }
             }
-                
             xStyle.count++;
             xFormat.Style = xStyle;
             return xFormat;
-        }
-
-        public XContent GetXContent(IXLCell cell)
-        {
-            if (cell.IsEmpty())
-                return new XContent();
-            try
-            {
-                string content = cell.GetString();
-                return new XContent(content);
-            }
-            catch (Exception ex)
-            {
-                throw new ParseFailException("Parse Content Fail!", ex);
-            }
-        }
-
-        public List<string> FormulaA1s = new List<string>();
-
-        public XFormula GetXFormula(IXLCell cell)
-        {
-            XFormula xFormula = new XFormula();
-            if (cell.HasFormula)
-                FormulaA1s.Add(cell.FormulaA1);
-            xFormula.HasFormula = cell.HasFormula ? 1 : 0;
-            xFormula.HasArrayFormula = cell.HasArrayFormula ? 1 : 0;
-            return xFormula;
-        }
-
-        public void SetFormulaReferenced(Dictionary<(int, int), XCell> cells)
-        {
-            foreach (string Formula in FormulaA1s)
-            {
-                foreach (Match match in XFormula.A1Regex.Matches(Formula.ToUpper()))
-                {
-                    int left = Utils.ParseColumn(match.Groups["Left"].Value);
-                    int top = Convert.ToInt32(match.Groups["Top"].Value);
-                    if (match.Groups["Right"].Value != string.Empty)
-                    {
-                        int right = Utils.ParseColumn(match.Groups["Right"].Value);
-                        int bottom = Convert.ToInt32(match.Groups["Bottom"].Value);
-                        for (int row = top; row <= bottom; row++)
-                        {
-                            for (int col = left; col <= right; col++)
-                            {
-                                if (cells.ContainsKey((row, col)))
-                                {
-                                    cells[(row, col)].Formula.IsReferenced += 1;
-                                }
-                            }
-                        }
-                    }
-                    else if(cells.ContainsKey((top, left)))
-                    {
-                        cells[(top, left)].Formula.IsReferenced += 1;
-                    }
-                }
-            }
         }
 
         public void SetOrderedIndex()

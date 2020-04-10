@@ -9,7 +9,9 @@ namespace HMarkupClassifier.SheetParser
         public int NumCol => right - left + 1;
         public int NumRow => bottom - top + 1;
 
-        public InfoSheet info;
+        public XFormatFactory xFormatFactory = new XFormatFactory();
+        public XFormulaFactory xFormulaFactory = new XFormulaFactory();
+        public XContentFactory xContentFactory = new XContentFactory();
         public Dictionary<(int, int), XCell> cells = new Dictionary<(int, int), XCell>();
 
         public XSheet(IXLWorksheet worksheet)
@@ -19,8 +21,6 @@ namespace HMarkupClassifier.SheetParser
             top = usedCells.RangeAddress.FirstAddress.RowNumber;
             right = usedCells.RangeAddress.LastAddress.ColumnNumber;
             bottom = usedCells.RangeAddress.LastAddress.RowNumber;
-
-            info = new InfoSheet();
 
             for (int row = top; row <= bottom; row++)
             {
@@ -42,13 +42,13 @@ namespace HMarkupClassifier.SheetParser
                     cells[(row, col)] = xCell;
                     xCell.HasValue = cell.IsEmpty() ? 0 : 1;
                     xCell.Merged = cell.IsMerged() ? 1 : 0;
-                    xCell.Format = info.GetXFormat(cell);
-                    xCell.Content = info.GetXContent(cell);
-                    xCell.Formula = info.GetXFormula(cell);
+                    xCell.Format = xFormatFactory.GetXFormat(cell);
+                    xCell.Content = xContentFactory.GetXContent(cell);
+                    xCell.Formula = xFormulaFactory.GetXFormula(cell);
                 }
             }
-            info.SetFormulaReferenced(cells);
-            info.SetOrderedIndex();
+            xFormulaFactory.SetFormulaReferenced(cells);
+            xFormatFactory.SetOrderedIndex();
         }
     }
 }

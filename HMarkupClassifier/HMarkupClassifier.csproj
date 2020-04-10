@@ -62,8 +62,8 @@
     <Compile Include="MarkParser\YSheet.cs" />
     <Compile Include="SheetParser\SheetParserTool.cs" />
     <Compile Include="SheetParser\XFeature\XContent.cs" />
+    <Compile Include="SheetParser\XFeature\XContentFactory.cs" />
     <Compile Include="SheetParser\XFeature\XFormat.cs" />
-    <Compile Include="SheetParser\InfoSheet.cs" />
     <Compile Include="SheetParser\XFeature\Styles\XAlignment.cs" />
     <Compile Include="SheetParser\XFeature\Styles\XBorder.cs" />
     <Compile Include="SheetParser\XFeature\Styles\XFill.cs" />
@@ -74,7 +74,9 @@
     <Compile Include="SheetParser\ParseFailException.cs" />
     <Compile Include="SheetParser\Position.cs" />
     <Compile Include="SheetParser\SheetFeature.cs" />
+    <Compile Include="SheetParser\XFeature\XFormatFactory.cs" />
     <Compile Include="SheetParser\XFeature\XFormula.cs" />
+    <Compile Include="SheetParser\XFeature\XFormulaFactory.cs" />
     <Compile Include="SheetParser\XSheet.cs" />
     <Compile Include="TestClosedXML.cs" />
     <Compile Include="Tools.cs" />
