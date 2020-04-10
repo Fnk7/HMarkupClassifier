@@ -6,20 +6,19 @@ using System.Text.RegularExpressions;
 
 using ClosedXML.Excel;
 using HMarkupClassifier.MarkParser;
-using HMarkupClassifier.SheetParser.Styles;
 
 namespace HMarkupClassifier.SheetParser
 {
     class SheetFeature
     {
         public SheetInfoABD info;
-        private XCellAbd[,] cells;
+        private CellABD[,] cells;
 
         private SheetFeature(IXLWorksheet sheet)
         {
             info = new SheetInfoABD(sheet);
             IXLRange usedCells = sheet.RangeUsed();
-            cells = new XCellAbd[info.NumCol, info.NumRow];
+            cells = new CellABD[info.NumCol, info.NumRow];
             if (info.NumCol * info.NumRow > 1000)
             {
                 throw new ParseFailException("Too large range.");
@@ -28,7 +27,7 @@ namespace HMarkupClassifier.SheetParser
             {
                 int col = cell.Address.ColumnNumber - info.left;
                 int row = cell.Address.RowNumber - info.top;
-                cells[col, row] = new XCellAbd(cell, info);
+                cells[col, row] = new CellABD(cell, info);
             }
             SetFormulaReference();
             info.SetIndex();
@@ -77,7 +76,7 @@ namespace HMarkupClassifier.SheetParser
         {
             using (StreamWriter writer = new StreamWriter(path))
             {
-                writer.WriteLine($"type,{XCellAbd.csvTitle}");
+                writer.WriteLine($"type,{CellABD.csvTitle}");
                 if (markSheet != null)
                     foreach (var cell in cells)
                     {
@@ -95,7 +94,7 @@ namespace HMarkupClassifier.SheetParser
             using (StreamWriter writer = new StreamWriter(path))
             //using (StreamWriter map = new StreamWriter(path.Substring(0, path.LastIndexOf(".csv")) + ".cellmap"))
             {
-                writer.WriteLine($"type,{XCellAbd.csvTitle}");
+                writer.WriteLine($"type,{CellABD.csvTitle}");
                 if (mark != null)
                     foreach (var cell in cells)
                     {

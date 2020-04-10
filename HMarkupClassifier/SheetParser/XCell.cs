@@ -11,8 +11,8 @@ namespace HMarkupClassifier.SheetParser
         public int HasValue;
         public int Merged;
         public XFormat Format;
-        public XContent Content;
         public XFormula Formula;
+        public XContent Content;
 
         public XCell(IXLCell cell)
         {
@@ -21,11 +21,11 @@ namespace HMarkupClassifier.SheetParser
         }
 
         public static string CSVTitle
-            = $"hasvalue,merged,{XFormat.CSVTitle},{XContent.CSVTitle},{XFormula.CSVTitle}";
+            = $"hasvalue,merged,{XFormat.CSVTitle},{XFormula.CSVTitle},{XContent.CSVTitle}";
 
         public override string ToString()
         {
-            return base.ToString();
+            return $"{HasValue},{Merged},{Format},{Formula},{Content}";
         }
     }
 }

@@ -1,15 +1,13 @@
 ﻿using ClosedXML.Excel;
 
-namespace HMarkupClassifier.SheetParser.Styles
+namespace HMarkupClassifier.SheetParser
 {
     class XStyle
     {
         public int count = 0;
 
-        // TODO Number Format
         public int HasPrefix;
         public int NumFormat;
-
         public XAlignment Alignment;
         public XBorder Border;
         public XFill Fill;

@@ -2,11 +2,9 @@
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 
-using HMarkupClassifier.SheetParser.Styles;
-
 namespace HMarkupClassifier.SheetParser
 {
-    class XCellAbd
+    class CellABD
     {
         // Cell Style
         public XStyle style;
@@ -45,7 +43,7 @@ namespace HMarkupClassifier.SheetParser
         public Position neighbors = new Position();
         public Position nonEmptyNeighbors = new Position();
 
-        public XCellAbd(IXLCell cell, SheetInfoABD info)
+        public CellABD(IXLCell cell, SheetInfoABD info)
         {
             // Position
             col = cell.Address.ColumnNumber;
@@ -91,11 +89,11 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public void SetNeighbors(int sideIndex, XCellAbd cell)
+        public void SetNeighbors(int sideIndex, CellABD cell)
         {
             neighbors.SetPosition(sideIndex, this, cell);
         }
-        public void SetNonEmptyNeighbors(int sideIndex, XCellAbd cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
+        public void SetNonEmptyNeighbors(int sideIndex, CellABD cell) => nonEmptyNeighbors.SetPosition(sideIndex, this, cell);
 
         public static string csvTitle = $"col,row,empty," +
                $"{XStyle.CSVTitle},merged," +

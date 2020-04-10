@@ -4,7 +4,7 @@ namespace HMarkupClassifier.SheetParser
 {
     class XFormula
     {
-        public static Regex A1Regex = new Regex(@"\$?(?<Left>[A-Z]{1,3})\$?(?<Top>\d+)(?::\$?(?<Right>[A-Z]{1,3})\$?(?<Bottom>\d+))");
+        public static Regex A1Regex = new Regex(@"\$?(?<Left>[A-Z]{1,3})\$?(?<Top>\d+)(?::\$?(?<Right>[A-Z]{1,3})\$?(?<Bottom>\d+))?");
 
         public int HasFormula = 0; 
         public int HasArrayFormula = 0;

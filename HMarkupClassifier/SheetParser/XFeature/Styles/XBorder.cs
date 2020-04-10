@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
 
-namespace HMarkupClassifier.SheetParser.Styles
+namespace HMarkupClassifier.SheetParser
 {
     struct XBorder
     {

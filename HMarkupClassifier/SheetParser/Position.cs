@@ -12,7 +12,7 @@ namespace HMarkupClassifier.SheetParser
                 sides[i] = new Side();
         }
 
-        public void SetPosition(int sideIndex, XCellAbd self, XCellAbd cell)
+        public void SetPosition(int sideIndex, CellABD self, CellABD cell)
         {
             var side = sides[sideIndex];
             if (self.style.Equals(cell.style)) side.style += 1;

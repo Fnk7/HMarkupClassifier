@@ -50,8 +50,5 @@ namespace HMarkupClassifier.SheetParser
             info.SetFormulaReferenced(cells);
             info.SetOrderedIndex();
         }
-
-
-
     }
 }

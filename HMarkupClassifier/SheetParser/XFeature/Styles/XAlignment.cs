@@ -1,10 +1,9 @@
 ﻿using ClosedXML.Excel;
 
-namespace HMarkupClassifier.SheetParser.Styles
+namespace HMarkupClassifier.SheetParser
 {
     struct XAlignment
     {
-        // TODO Alignment
         // 0-7 General is 4
         public int Horizontal;
         // 0-4 Bottom is 0

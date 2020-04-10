@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using HMarkupClassifier.SheetParser.Styles;
-
 namespace HMarkupClassifier.SheetParser
 {
     class InfoSheet
@@ -22,10 +20,17 @@ namespace HMarkupClassifier.SheetParser
             if (!FontNames.Contains(FontName))
                 FontNames.Add(FontName);
             xStyle.Font.NameIndex = FontNames.IndexOf(FontName);
-            if (styles.ContainsKey(xFormat.Style))
+            if (styles.ContainsKey(xStyle))
                 xStyle = styles[xStyle];
             else
+            {
                 styles.Add(xStyle, xStyle);
+                if (styles.Count >= MaxStyles)
+                {
+                    throw new ParseFailException($"Styles Count over {MaxStyles}");
+                }
+            }
+                
             xStyle.count++;
             xFormat.Style = xStyle;
             return xFormat;
@@ -70,7 +75,7 @@ namespace HMarkupClassifier.SheetParser
                     {
                         int right = Utils.ParseColumn(match.Groups["Right"].Value);
                         int bottom = Convert.ToInt32(match.Groups["Bottom"].Value);
-                        for (int row = top; row <= top; row++)
+                        for (int row = top; row <= bottom; row++)
                         {
                             for (int col = left; col <= right; col++)
                             {
@@ -101,14 +106,14 @@ namespace HMarkupClassifier.SheetParser
                     FontNameCnt.Add(style.Font.NameIndex, 0);
                 if (!FontColorCnt.ContainsKey(style.Font.Color))
                     FontColorCnt.Add(style.Font.Color, 0);
-                FontNameCnt[style.Font.NameIndex] += style.count;
-                FontColorCnt[style.Font.Color] += style.count;
                 if (!PtnColorCnt.ContainsKey(style.Fill.PtnColor))
                     PtnColorCnt.Add(style.Fill.PtnColor, 0);
                 if (!BckColorCnt.ContainsKey(style.Fill.BckColor))
                     BckColorCnt.Add(style.Fill.BckColor, 0);
+                FontNameCnt[style.Font.NameIndex] += style.count;
+                FontColorCnt[style.Font.Color] += style.count;
                 PtnColorCnt[style.Fill.PtnColor] += style.count;
-                PtnColorCnt[style.Fill.BckColor] += style.count;
+                BckColorCnt[style.Fill.BckColor] += style.count;
             }
             var OrderedFontName = (from x in FontNameCnt orderby x.Value descending select x.Key).ToList();
             var OrderedFontColor = (from x in FontColorCnt orderby x.Value descending select x.Key).ToList();
@@ -117,9 +122,9 @@ namespace HMarkupClassifier.SheetParser
             foreach (var style in styles.Keys)
             {
                 style.Font.NameIndex = OrderedFontName.IndexOf(style.Font.NameIndex);
-                style.Font.Color = OrderedFontName.IndexOf(style.Font.Color);
+                style.Font.Color = OrderedFontColor.IndexOf(style.Font.Color);
                 style.Fill.PtnColor = OrderedPtnColor.IndexOf(style.Fill.PtnColor);
-                style.Fill.PtnColor = OrderedBckColor.IndexOf(style.Fill.BckColor);
+                style.Fill.BckColor = OrderedBckColor.IndexOf(style.Fill.BckColor);
             }
         }
     }

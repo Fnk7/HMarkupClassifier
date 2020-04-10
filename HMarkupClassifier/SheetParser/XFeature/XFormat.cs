@@ -1,7 +1,5 @@
 ﻿using ClosedXML.Excel;
 
-using HMarkupClassifier.SheetParser.Styles;
-
 namespace HMarkupClassifier.SheetParser
 {
     class XFormat

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace HMarkupClassifier.SheetParser
 {
+    // TODO 增加Content的Feature
     class XContent
     {
         // Content
@@ -28,19 +29,19 @@ namespace HMarkupClassifier.SheetParser
         public XContent()
         {
             Words = 0;
-
         }
 
         public XContent(string content)
         {
+            Words = Regex.Split(content, @"\W+").Length;
         }
 
         public static string CSVTitle
-            = $"";//TODO
+            = $"words";
 
         public override string ToString()
         {
-            return base.ToString();//TODO
+            return $"{Words}";
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Test
         static void Main(string[] args)
         {
             Console.WriteLine("Start...");
-            ForTest.Test();
+            Tools.ParseMarkDst("D:\\Temp\\Test\\Marked", "D:\\Temp\\Test\\CSV\\CSV-New-1");
             Console.WriteLine("Finish.");
         }
     }
