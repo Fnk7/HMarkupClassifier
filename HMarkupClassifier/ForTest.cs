@@ -8,7 +8,7 @@ using ClosedXML.Excel;
 
 namespace HMarkupClassifier
 {
-    public static class TestClosedXML
+    public static class ForTest
     {
         public static string bookfile = "D:\\Temp\\fortest.xlsx";
 

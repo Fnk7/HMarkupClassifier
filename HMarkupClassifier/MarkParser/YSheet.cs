@@ -8,9 +8,9 @@ namespace HMarkupClassifier.MarkParser
         public List<Mark> marks;
         public YSheet(List<Mark> marks) => this.marks = marks;
 
-        public int GetCellType(int col, int row)
+        public int GetCellType(int row, int col)
         {
-            if (marks.FirstOrDefault(m => m.ContainCell(col, row)) is Mark mark)
+            if (marks.FirstOrDefault(m => m.ContainCell(row, col)) is Mark mark)
                 return mark.type;
             return 3;
         }

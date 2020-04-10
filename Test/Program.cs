@@ -8,7 +8,7 @@ namespace Test
         static void Main(string[] args)
         {
             Console.WriteLine("Start...");
-            TestClosedXML.Test();
+            ForTest.Test();
             Console.WriteLine("Finish.");
         }
     }

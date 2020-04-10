@@ -13,7 +13,7 @@
             this.bottom = bottom;
         }
 
-        public bool ContainCell(int col, int row)
+        public bool ContainCell(int row, int col)
             => col >= left && col <= right && row >= top && row <= bottom;
 
         public override string ToString()

@@ -60,6 +60,7 @@
     <Compile Include="MarkParser\Mark.cs" />
     <Compile Include="MarkParser\MarkParserTool.cs" />
     <Compile Include="MarkParser\YSheet.cs" />
+    <Compile Include="SheetParser\SheetParserTool.cs" />
     <Compile Include="SheetParser\XContent.cs" />
     <Compile Include="SheetParser\XFormat.cs" />
     <Compile Include="SheetParser\InfoSheet.cs" />
@@ -75,7 +76,7 @@
     <Compile Include="SheetParser\SheetFeature.cs" />
     <Compile Include="SheetParser\XFormula.cs" />
     <Compile Include="SheetParser\XSheet.cs" />
-    <Compile Include="TestClosedXML.cs" />
+    <Compile Include="ForTest.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

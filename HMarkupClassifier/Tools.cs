@@ -14,7 +14,6 @@ namespace HMarkupClassifier
         private static readonly string xlsx = ".xlsx";
         private static readonly string csv = ".csv";
 
-
         public static void ParseMarkDst(string markDst, string CSVDst)
         {
             if (!Directory.Exists(CSVDst))
@@ -25,6 +24,7 @@ namespace HMarkupClassifier
             int sheetIndex = 1;
             var markFiles = Directory.GetFiles(markDst, "*.mark");
             var rangeFiles = Directory.GetFiles(markDst, "*.range");
+
             var files = new List<string>(markFiles).Concat(rangeFiles);
             using (StreamWriter infoWriter = new StreamWriter(Path.Combine(CSVDst, "Info.txt")))
             {
@@ -35,30 +35,29 @@ namespace HMarkupClassifier
                     if (File.Exists(workbookFile))
                     {
                         infoWriter.WriteLine(workbookFile);
-                        Dictionary<string, YSheet> markSheets = MarkParserTool.Parse(markFile);
-                        using (XLWorkbook book = new XLWorkbook(workbookFile))
-                            foreach (var sheet in book.Worksheets)
-                                if (markSheets.ContainsKey(sheet.Name))
+                        Dictionary<string, YSheet> ySheets = MarkParserTool.Parse(markFile);
+                        using (XLWorkbook workbook = new XLWorkbook(workbookFile))
+                        {
+                            foreach (var worksheet in workbook.Worksheets)
+                                if (ySheets.ContainsKey(worksheet.Name))
                                     try
                                     {
-                                        SheetFeature feature = SheetFeature.ParseSheet(sheet);
+                                        XSheet xSheet = SheetParserTool.ParseSheet(worksheet);
                                         string CSVPath = Path.Combine(CSVDst, $"Sheet{sheetIndex:D3}{csv}");
-                                        feature.WriteIntoCSV(CSVPath, markSheets[sheet.Name]);
-                                        infoWriter.WriteLine($"{sheet.Name}\tSheet{sheetIndex:D3}{csv}");
+                                        SheetParserTool.WriteCSV(CSVPath, xSheet, ySheets[worksheet.Name]);
+                                        infoWriter.WriteLine($"{worksheet.Name}\tSheet{sheetIndex:D3}{csv}");
                                         sheetIndex++;
                                     }
                                     catch (ParseFailException ex)
                                     {
-                                        infoWriter.WriteLine($"{sheet.Name}\t{ex.Message}");
-                                        Console.WriteLine($"{sheet.Name}\t{ex.Message}");
+                                        infoWriter.WriteLine($"{worksheet.Name}\t{ex.Message}");
+                                        Console.WriteLine($"{worksheet.Name}\t{ex.Message}");
                                     }
+                        }
                         infoWriter.WriteLine();
                     }
                 }
             }
         }
-
-
-
     }
 }
