@@ -47,8 +47,8 @@ namespace HMarkupClassifier.SheetParser
                     xCell.Formula = xFormulaFactory.GetXFormula(cell);
                 }
             }
-            xFormulaFactory.SetFormulaReferenced(cells);
             xFormatFactory.SetOrderedIndex();
+            xFormulaFactory.SetFormulaReferenced(cells);
         }
     }
 }

@@ -34,6 +34,13 @@ namespace HMarkupClassifier.SheetParser
         public XContent(string content)
         {
             Words = Regex.Split(content, @"\W+").Length;
+            //likeYear = (byte)(likeYearRegex.IsMatch(value.Trim()) ? 1 : 0);
+            //beginNumber = (byte)(beginNumRegex.IsMatch(value) ? 1 : 0);
+            //beginSpecial = (byte)(beginSpecialRegex.IsMatch(value) ? 1 : 0);
+            //symbols = (byte)(symbolsRegex.IsMatch(value) ? 1 : 0);
+            //punctuation = (byte)(punctuationRegex.IsMatch(value) ? 1 : 0);
+            //allUpper = (byte)(hasLowerRegex.IsMatch(value) ? 0 : 1);
+            //allNumber = (byte)(allNumberRegex.IsMatch(value) ? 1 : 0);
         }
 
         public static string CSVTitle

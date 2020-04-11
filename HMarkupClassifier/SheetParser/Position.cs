@@ -12,18 +12,18 @@ namespace HMarkupClassifier.SheetParser
                 sides[i] = new Side();
         }
 
-        public void SetPosition(int sideIndex, CellABD self, CellABD cell)
-        {
-            var side = sides[sideIndex];
-            if (self.style.Equals(cell.style)) side.style += 1;
-            if (self.style.Alignment.Equals(cell.style.Alignment)) side.style += 1;
-            if (self.style.Fill.Equals(cell.style.Fill)) side.style += 1;
-            if (self.style.Font.Equals(cell.style.Font)) side.style += 1;
-            side.datatype = cell.dataType;
-            side.refered = cell.isReferenced;
-            side.formula = cell.hasFormula;
-            side.words = cell.words;
-        }
+        //public void SetPosition(int sideIndex, CellABD self, CellABD cell)
+        //{
+        //    var side = sides[sideIndex];
+        //    if (self.style.Equals(cell.style)) side.style += 1;
+        //    if (self.style.Alignment.Equals(cell.style.Alignment)) side.style += 1;
+        //    if (self.style.Fill.Equals(cell.style.Fill)) side.style += 1;
+        //    if (self.style.Font.Equals(cell.style.Font)) side.style += 1;
+        //    side.datatype = cell.dataType;
+        //    side.refered = cell.isReferenced;
+        //    side.formula = cell.hasFormula;
+        //    side.words = cell.words;
+        //}
 
         public static string CSVTitle
             = $"{Side.CSVTitle(0)},{Side.CSVTitle(1)},{Side.CSVTitle(2)},{Side.CSVTitle(3)}";
