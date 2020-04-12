@@ -10,8 +10,22 @@ namespace HMarkupClassifier.SheetParser
         public int HasArrayFormula = 0;
         public int IsReferenced = 0;
 
+        public int Similar(XFormula xFormula)
+        {
+            int similarity = 0;
+            if (HasFormula == xFormula.HasFormula)
+                similarity++;
+            if (IsReferenced != 0 && xFormula.IsReferenced != 0)
+            {
+                similarity++;
+                if (IsReferenced == xFormula.IsReferenced)
+                    similarity++;
+            }
+            return similarity;
+        }
+
         public static string CSVTitle
-            = $"formula,arrayformula,referenced";
+            = $"fml-formula,fml-arrayformula,fml-referenced";
 
         public override string ToString()
         {

@@ -9,31 +9,18 @@ namespace HMarkupClassifier.SheetParser
 
         public XBorder(IXLBorder border)
         {
-            left = GetBorderValue(border.LeftBorder);
-            top = GetBorderValue(border.TopBorder);
-            right = GetBorderValue(border.RightBorder);
-            bottom = GetBorderValue(border.BottomBorder);
-        }
-
-        public static int GetBorderValue(XLBorderStyleValues value)
-        {
-            switch (value)
-            {
-                case XLBorderStyleValues.None:
-                    return 0;
-                case XLBorderStyleValues.Thin:
-                    return 1;
-                default:
-                    return 2;
-            }
+            left = (int)border.LeftBorder;
+            top = (int)border.TopBorder;
+            right = (int)border.RightBorder;
+            bottom = (int)border.BottomBorder;
         }
 
         public override int GetHashCode()
         {
             int hashCode = left;
-            hashCode = (hashCode << 2) ^ top;
-            hashCode = (hashCode << 2) ^ right;
-            hashCode = (hashCode << 2) ^ bottom;
+            hashCode = (hashCode << 5) ^ top;
+            hashCode = (hashCode << 5) ^ right;
+            hashCode = (hashCode << 5) ^ bottom;
             return hashCode;
         }
 

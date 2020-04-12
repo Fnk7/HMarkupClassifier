@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System;
 
 namespace HMarkupClassifier.SheetParser
 {
@@ -10,20 +11,9 @@ namespace HMarkupClassifier.SheetParser
 
         public XFill(IXLFill fill)
         {
-            switch (fill.PatternType)
-            {
-                case XLFillPatternValues.None:
-                    Pattern = 0;
-                    break;
-                case XLFillPatternValues.Solid:
-                    Pattern = 1;
-                    break;
-                default:
-                    Pattern = 2;
-                    break;
-            }
-            PtnColor = fill.PatternColor.Color.ToArgb();
-            BckColor = fill.BackgroundColor.Color.ToArgb();
+            Pattern = (int)fill.PatternType;
+            PtnColor = Utils.GetColor(fill.PatternColor);
+            BckColor = Utils.GetColor(fill.BackgroundColor);
         }
 
         public override int GetHashCode()

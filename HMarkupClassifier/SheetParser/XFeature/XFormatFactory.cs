@@ -13,8 +13,14 @@ namespace HMarkupClassifier.SheetParser
         public XFormat GetXFormat(IXLCell cell)
         {
             XFormat xFormat = new XFormat(cell);
-            XStyle xStyle = new XStyle(cell.Style);
-            var FontName = cell.Style.Font.FontName;
+            xFormat.Style = GetXStyle(cell.Style);
+            return xFormat;
+        }
+
+        public XStyle GetXStyle(IXLStyle style)
+        {
+            XStyle xStyle = new XStyle(style);
+            var FontName = style.Font.FontName;
             if (!FontNames.Contains(FontName))
                 FontNames.Add(FontName);
             xStyle.Font.NameIndex = FontNames.IndexOf(FontName);
@@ -29,8 +35,7 @@ namespace HMarkupClassifier.SheetParser
                 }
             }
             xStyle.count++;
-            xFormat.Style = xStyle;
-            return xFormat;
+            return xStyle;
         }
 
         public void SetOrderedIndex()

@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System;
 
 namespace HMarkupClassifier.SheetParser
 {
@@ -19,28 +20,10 @@ namespace HMarkupClassifier.SheetParser
             Bold = font.Bold ? 1 : 0;
             Italic = font.Italic ? 1 : 0;
             Strikethrough = font.Strikethrough ? 1 : 0;
-            Underline = 0;
-            switch (font.Underline)
-            {
-                case XLFontUnderlineValues.Double:
-                case XLFontUnderlineValues.DoubleAccounting:
-                    Underline = 2;
-                    break;
-                case XLFontUnderlineValues.Single:
-                case XLFontUnderlineValues.SingleAccounting:
-                    Underline = 1;
-                    break;
-            }
-            Vertical = 0;
-            switch (font.VerticalAlignment)
-            {
-                case XLFontVerticalTextAlignmentValues.Subscript:
-                case XLFontVerticalTextAlignmentValues.Superscript:
-                    Vertical = 1;
-                    break;
-            }
+            Underline = (int)font.Underline;
+            Vertical = (int)font.VerticalAlignment;
             Size = font.FontSize;
-            Color = font.FontColor.Color.ToArgb();
+            Color = Utils.GetColor(font.FontColor);
             NameIndex = 0;
         }
 
@@ -55,6 +38,19 @@ namespace HMarkupClassifier.SheetParser
             hashCode = (hashCode << 2) ^ Size.GetHashCode();
             hashCode = (hashCode << 2) ^ NameIndex;
             return hashCode;
+        }
+
+        public int Differ(XFont font)
+        {
+            int diff = 0;
+            if (Bold != font.Bold)
+                diff++;
+            if (Italic != font.Italic)
+                diff++;
+            if (Underline != font.Underline)
+                diff++;
+
+            return diff;
         }
 
         public static string CSVTitle

@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System;
 
 namespace HMarkupClassifier.SheetParser
 {
@@ -6,9 +7,11 @@ namespace HMarkupClassifier.SheetParser
     {
         // Cell Style
         public XStyle Style;
-        public int DataType;
-        public int HasHyperlink;
-        public int HasComment;
+        public int DataType = 0;
+        public int HasHyperlink = 0;
+        public int HasComment = 0;
+
+        public XFormat() { }
 
         public XFormat(IXLCell cell)
         {
