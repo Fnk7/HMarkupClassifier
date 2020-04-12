@@ -78,7 +78,7 @@ namespace HMarkupClassifier.SheetParser
                 .Any(word => trimContent.Contains(word)) ? 1 : 0;
             HeaderWord = HeaderWordList
                 .Any(word => ignoreCaseContent.Contains(word)) ? 1 : 0;
-            DataWord = DateWordList
+            DataWord = DataWordList
                 .Any(word => ignoreCaseContent == word) ? 1 : 0;
         }
 
@@ -87,16 +87,14 @@ namespace HMarkupClassifier.SheetParser
             if (Length == 0 || content.Length == 0)
                 return 0;
             int similarity = 0;
-            if (Length == content.Length)
-                similarity++;
             if (Words == content.Words)
                 similarity++;
             if (Year == content.Year)
                 similarity += Year;
             if (Begin == content.Begin)
                 similarity += Begin;
-            if (Space == content.Space)
-                similarity += Space;
+            if (Space != 0 && content.Space != 0)
+                similarity ++;
             if (Symbol == content.Symbol)
                 similarity += Symbol;
             if (Punctuation == content.Punctuation)
