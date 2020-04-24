@@ -10,7 +10,7 @@ namespace HMarkupClassifier.Predict
     public static class Predict
     {
         public static string[] ClfNames = { "Random-Forest"};
-        public static List<(int, int)> PredictHeader(int clf, string workbookFile, string sheetName, string tempdir = null)
+        public static List<(int, int)> PredictHeader(string clfPath, int clf, string workbookFile, string sheetName, string tempdir = null)
         {
             using (XLWorkbook workbook = new XLWorkbook(workbookFile))
             {
@@ -27,7 +27,7 @@ namespace HMarkupClassifier.Predict
                 argument[1] = ClfNames[clf];
                 argument[2] = Path.Combine(tempdir, "temp_result.csv");
                 xSheet.WriteCSV(argument[0]);
-                var code = Utils.RunPython("D:\\Workspace\\Python\\HeaderClf\\main.py", argument);
+                var code = Utils.RunPython(clfPath, argument);
                 if(code != 0 || !File.Exists(argument[2]))
                     throw new Exception("Run Classifier Failed!");
                 return GetHeaders(argument[2]);
