@@ -71,7 +71,7 @@ namespace HMarkupClassifier.SheetParser
             }
         }
 
-        public void WriteCSV(string path, YSheet ySheet)
+        public void WriteCSV(string path, YSheet ySheet = null)
         {
             using (StreamWriter writer = new StreamWriter(path))
             {
@@ -79,12 +79,18 @@ namespace HMarkupClassifier.SheetParser
                 for (int i = 0; i < 4; i++)
                     writer.Write($",{XSide.CSVTitle(i)}");
                 writer.WriteLine();
-                int type;
+                int type = 0;
                 for (int row = top; row <= bottom; row++)
                 {
                     for (int col = left; col <= right; col++)
                     {
-                        type = ySheet.GetCellType(row, col);
+                        if(ySheet != null)
+                        {
+                            if (cells[(row, col)].HasValue == 0)
+                                type = -3;
+                            else
+                                type = ySheet.GetCellType(row, col);
+                        }
                         writer.Write($"{type},{row},{col},{cells[(row, col)]}");
                         writer.Write($",{GetXSide(row, col, 0, -1)}");
                         writer.Write($",{GetXSide(row, col, -1, 0)}");
@@ -95,6 +101,5 @@ namespace HMarkupClassifier.SheetParser
                 }
             }
         }
-
     }
 }

@@ -60,6 +60,7 @@
     <Compile Include="MarkParser\Mark.cs" />
     <Compile Include="MarkParser\MarkParserTool.cs" />
     <Compile Include="MarkParser\YSheet.cs" />
+    <Compile Include="Predict\Predict.cs" />
     <Compile Include="SheetParser\SheetParserTool.cs" />
     <Compile Include="SheetParser\XFeature\XContent.cs" />
     <Compile Include="SheetParser\XFeature\XContentFactory.cs" />

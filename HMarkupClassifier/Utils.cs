@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System.Text;
 using System;
 
 namespace HMarkupClassifier
@@ -28,12 +29,15 @@ namespace HMarkupClassifier
             }
         }
 
-        public static int RunPython(string pythonFile, string argument)
+        public static int RunPython(string pythonFile, string[] argument)
         {
             using (System.Diagnostics.Process process = new System.Diagnostics.Process())
             {
                 process.StartInfo.FileName = "python";
-                process.StartInfo.Arguments = $"{pythonFile} {argument}";
+                if(argument == null || argument.Length == 0)
+                    process.StartInfo.Arguments = $"{pythonFile}";
+                else
+                    process.StartInfo.Arguments = $"{pythonFile} {string.Join(" ", argument)}";
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.Start();

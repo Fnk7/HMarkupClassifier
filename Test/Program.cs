@@ -1,5 +1,5 @@
 ﻿using System;
-using HMarkupClassifier;
+using HMarkupClassifier.Predict;
 
 namespace Test
 {
@@ -7,9 +7,14 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Start...");
-            Tools.ParseMarkDst("D:\\Temp\\Marked-04-12-M1", "D:\\Temp\\Test\\CSV\\CSV-04-12-M1-C1");
-            Console.WriteLine("Finish.");
+            //Console.WriteLine("Start...");
+            //Tools.ParseMarkDst("D:\\Temp\\TestMarked", "D:\\Temp\\TestCSV");
+            //Console.WriteLine("Finish.");
+            var result = Predict.PredictHeader(0, "D:\\Temp\\test.xlsx", "Sheet");
+            foreach (var (row, col) in result)
+            {
+                Console.WriteLine($"R{row}C{col}");
+            }
         }
     }
 }

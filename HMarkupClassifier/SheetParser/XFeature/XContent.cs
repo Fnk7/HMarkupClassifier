@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 
 namespace HMarkupClassifier.SheetParser
 {
-    // TODO 增加Content的Feature
     class XContent
     {
         // Content
@@ -23,14 +22,14 @@ namespace HMarkupClassifier.SheetParser
             {"revised", "remark", "note", "table", "source", "data"};
         public int MetaWord;
         public static string[] StatisticWordList =
-            {"total", "mean", "avg", "average", "percent", "amount", "min", "max"};
+            {"total", "mean", "avg", "average", "percent", "amount", "min", "max", "std", "all", "count"};
         public int StatisticWord;
         public static string[] DateWordList =
             {"Spr", "Sum", "Fall", "Aut", "Win",
              "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
         public int DateWord;
         public static string[] HeaderWordList =
-            {"name", "year", "country", "mail", "ii", "iii", "iv"};
+            {"name", "year", "country", "mail", "ii", "iii", "iv", "id", "no."};
         public int HeaderWord;
         public static string[] DataWordList =
             {"n/a", "~", "-", "a", "b", "c", "d"};
