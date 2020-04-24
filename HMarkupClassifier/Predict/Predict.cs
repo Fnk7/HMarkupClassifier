@@ -9,29 +9,29 @@ namespace HMarkupClassifier.Predict
 {
     public static class Predict
     {
-        public static string[] ClfNames = { "Random-Forest"};
-        public static List<(int, int)> PredictHeader(string clfPath, int clf, string workbookFile, string sheetName, string tempdir = null)
+        public static List<(int, int)> PredictHeader(string pythonFile, string clf, string workbookFile, string sheetName, string tempdir = null)
         {
+            XSheet xSheet;
             using (XLWorkbook workbook = new XLWorkbook(workbookFile))
             {
                 if (!workbook.Worksheets.Contains(sheetName))
                     throw new Exception("Sheet Not Exits");
                 var worksheet = workbook.Worksheet(sheetName);
-                XSheet xSheet = SheetParserTool.ParseSheet(worksheet);
-                if (tempdir == null)
-                    tempdir = Path.GetTempPath();
-                if (tempdir == null)
-                    throw new Exception("temp folder not exsit");
-                string[] argument = new string[3];
-                argument[0] = Path.Combine(tempdir, "temp_sheet.csv");
-                argument[1] = ClfNames[clf];
-                argument[2] = Path.Combine(tempdir, "temp_result.csv");
-                xSheet.WriteCSV(argument[0]);
-                var code = Utils.RunPython(clfPath, argument);
-                if(code != 0 || !File.Exists(argument[2]))
-                    throw new Exception("Run Classifier Failed!");
-                return GetHeaders(argument[2]);
+                xSheet = SheetParserTool.ParseSheet(worksheet);
             }
+            if (tempdir == null)
+                tempdir = Path.GetTempPath();
+            if (tempdir == null)
+                throw new Exception("Temp folder not exsit");
+            string[] argument = new string[3];
+            argument[0] = clf;
+            argument[1] = Path.Combine(tempdir, "temp_sheet.csv");
+            argument[2] = Path.Combine(tempdir, "temp_result.csv");
+            xSheet.WriteCSV(argument[1]);
+            var code = Utils.RunPython(pythonFile, argument);
+            if (code != 0 || !File.Exists(argument[2]))
+                throw new Exception("Run Classifier Failed!");
+            return GetHeaders(argument[2]);
         }
 
         public static List<(int, int)> GetHeaders(string resultFile)
