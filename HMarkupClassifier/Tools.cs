@@ -26,6 +26,20 @@ namespace HMarkupClassifier
             }
         }
 
+        public static void ParseWorksheet(string source, string sheet, string dest)
+        {
+            using (XLWorkbook workbook = new XLWorkbook(source))
+            {
+                if (!workbook.Worksheets.Contains(sheet))
+                    throw new Exception("Sheet Not Exits.");
+                var worksheet = workbook.Worksheet(sheet);
+                if (worksheet.IsEmpty())
+                    throw new Exception("Sheet Empty.");
+                XSheet xSheet = SheetParserTool.ParseSheet(worksheet);
+                xSheet.WriteCSV(dest);
+            }
+        }
+
         public static void ParseMarkDst(string markDst, string CSVDst)
         {
             if (!Directory.Exists(CSVDst))
@@ -70,5 +84,6 @@ namespace HMarkupClassifier
                 }
             }
         }
+
     }
 }

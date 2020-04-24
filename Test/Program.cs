@@ -1,5 +1,4 @@
 ﻿using System;
-using HMarkupClassifier.Predict;
 
 namespace Test
 {
@@ -10,11 +9,6 @@ namespace Test
             //Console.WriteLine("Start...");
             //Tools.ParseMarkDst("D:\\Temp\\TestMarked", "D:\\Temp\\TestCSV");
             //Console.WriteLine("Finish.");
-            var result = Predict.PredictHeader("D:\\Workspace\\Python\\HeaderClf\\main.py", "random_forest.pkl", "D:\\Temp\\test.xlsx", "Sheet");
-            foreach (var (row, col) in result)
-            {
-                Console.WriteLine($"R{row}C{col}");
-            }
         }
     }
 }
